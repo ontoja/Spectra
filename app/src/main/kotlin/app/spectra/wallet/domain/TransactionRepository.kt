@@ -55,7 +55,7 @@ class TransactionRepository(private val c: AppContainer) {
     suspend fun execute(prepared: PreparedTransaction, vaultId: String, accountId: String): ExecuteResult {
         val n = prepared.request.account.network
         requireSigningAllowed(n)
-        if (prepared.expiresAtMillis != null && System.currentTimeMillis() > prepared.expiresAtMillis) return ExecuteResult.Failed(null, WalletError.QuoteExpired())
+        if (prepared.expiresAtMillis?.let { System.currentTimeMillis() > it } == true) return ExecuteResult.Failed(null, WalletError.QuoteExpired())
         val r = prepared.request
         val signed = try {
             c.auth.withKeyring(vaultId, "Potwierdź transakcję", "Wysyłasz ${r.token.symbol} w sieci ${n.displayName}") { k -> c.adapter(n).sign(prepared, k) }
