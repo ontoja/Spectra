@@ -45,6 +45,8 @@ class Bip32Key private constructor(
 
     fun wipe() = SecureMemory.wipe(privateKey, chainCode)
 
+    fun publicNode(): Bip32PublicNode = Bip32PublicNode(publicKey.copyOf(), chainCode.copyOf())
+
     /** Serialises as xprv (mainnet version bytes). Used for test-vector verification only. */
     fun toXprv(): String = serialize(0x0488ADE4, byteArrayOf(0) + privateKey)
     fun toXpub(): String = serialize(0x0488B21E, publicKey)
@@ -62,6 +64,32 @@ class Bip32Key private constructor(
         }
 
         internal fun ser32(v: Long) = byteArrayOf((v ushr 24).toByte(), (v ushr 16).toByte(), (v ushr 8).toByte(), v.toByte())
+    }
+}
+
+/** Public-only BIP-32 node (CKDpub) for watch-only address discovery. Holds no secret material. */
+class Bip32PublicNode(val publicKey: ByteArray, val chainCode: ByteArray) {
+    init { require(publicKey.size == 33 && chainCode.size == 32) }
+
+    fun deriveChild(index: Long): Bip32PublicNode {
+        require(index in 0 until DerivationPath.HARDENED) { "Public derivation cannot produce hardened children" }
+        val i = Hashes.hmacSha512(chainCode, publicKey + Bip32Key.ser32(index))
+        val il = BigInteger(1, i.copyOfRange(0, 32))
+        require(il < Secp256k1.n) { "Invalid child at index $index" }
+        val point = Secp256k1.domain.g.multiply(il).add(Secp256k1.decodePoint(publicKey)).normalize()
+        require(!point.isInfinity) { "Invalid child at index $index" }
+        return Bip32PublicNode(point.getEncoded(true), i.copyOfRange(32, 64))
+    }
+
+    /** Compact storage form: hex(pubkey || chaincode). Public data only. */
+    fun serialize(): String = app.spectra.core.encoding.Hex.encode(publicKey + chainCode)
+
+    companion object {
+        fun deserialize(hex: String): Bip32PublicNode {
+            val b = app.spectra.core.encoding.Hex.decode(hex)
+            require(b.size == 65)
+            return Bip32PublicNode(b.copyOfRange(0, 33), b.copyOfRange(33, 65))
+        }
     }
 }
 

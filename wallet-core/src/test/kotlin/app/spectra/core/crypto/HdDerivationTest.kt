@@ -38,3 +38,18 @@ class HdDerivationTest {
         assertEquals("m/84'/2'/0'/0/5", DerivationPath.parse("m/84h/2'/0'/0/5").toString())
     }
 }
+
+class PublicDerivationTest {
+    @Test fun publicDerivationMatchesPrivate() {
+        val master = Bip32Key.fromSeed(app.spectra.core.encoding.Hex.decode("000102030405060708090a0b0c0d0e0f"))
+        val account = master.derive(DerivationPath.parse("m/84'/2'/0'"))
+        val pub = account.publicNode()
+        for (role in 0L..1L) for (i in 0L..3L) {
+            assertEquals(
+                app.spectra.core.encoding.Hex.encode(account.deriveChild(role).deriveChild(i).publicKey),
+                app.spectra.core.encoding.Hex.encode(pub.deriveChild(role).deriveChild(i).publicKey),
+            )
+        }
+        assertEquals(pub.serialize(), Bip32PublicNode.deserialize(pub.serialize()).serialize())
+    }
+}

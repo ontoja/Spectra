@@ -84,6 +84,13 @@ class Keyring private constructor(private val seed: ByteArray) : AutoCloseable {
         }
     }
 
+    /** Account-level public node for Litecoin watch-only discovery (stored as public metadata). */
+    fun accountPublicNode(network: Network, scheme: DerivationScheme, account: Int): app.spectra.core.crypto.Bip32PublicNode {
+        require(network.chain == Chain.LITECOIN && scheme.chain == Chain.LITECOIN)
+        val node = secpNode(scheme.path(account, network.env)!!)
+        return node.publicNode().also { node.wipe() }
+    }
+
     override fun close() {
         if (!closed) { SecureMemory.wipe(seed); closed = true }
     }
