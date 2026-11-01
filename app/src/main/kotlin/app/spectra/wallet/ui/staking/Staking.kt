@@ -189,7 +189,7 @@ fun StakingScreen(main: MainViewModel) {
             }
             Spacer(Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(o?.inflationPct?.let { String.format("%.2f", it).replace('.', ',') + "%" } ?: "—", style = Spectra.type.display, color = col.text)
+                Text(o?.inflationPct?.let { String.format(java.util.Locale.ROOT, "%.2f", it).replace('.', ',') + "%" } ?: "—", style = Spectra.type.display, color = col.text)
                 Spacer(Modifier.width(8.dp))
                 Text("rocznie", style = Spectra.type.bodyStrong, color = col.textSecondary, modifier = Modifier.padding(bottom = 6.dp))
             }

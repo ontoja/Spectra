@@ -66,7 +66,10 @@ class ScreenshotTest {
         File(out, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
-    @Test fun welcome() = shot("01_welcome") { OnboardingFlow(OnboardingViewModel(app.container, false), {}) }
+    @Test fun welcome() {
+        val vm = OnboardingViewModel(app.container, false)
+        shot("01_welcome") { OnboardingFlow(vm, {}) }
+    }
 
     @Test fun pinCreate() {
         val vm = OnboardingViewModel(app.container, false).apply { startCreate(); pinDigit('4'); pinDigit('8') }

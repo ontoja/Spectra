@@ -231,7 +231,7 @@ fun SwapScreen(main: MainViewModel) {
             GlassCard(Modifier.fillMaxWidth()) {
                 KeyValueRow("Szacunkowo otrzymasz", Fmt.amountWithSymbol(q.estimatedOut, vm.toToken?.symbol ?: ""))
                 KeyValueRow("Minimum do otrzymania", Fmt.amountWithSymbol(q.minimumOut, vm.toToken?.symbol ?: ""))
-                q.priceImpactPct?.let { KeyValueRow("Wpływ na cenę", String.format("%.2f%%", it), if (it > 1) col.warning else col.text) }
+                q.priceImpactPct?.let { KeyValueRow("Wpływ na cenę", String.format(java.util.Locale.ROOT, "%.2f%%", it), if (it > 1) col.warning else col.text) }
                 KeyValueRow("Trasa", q.route.take(4).joinToString(" → ").ifEmpty { "—" }, strong = false)
                 q.estimatedDurationSec?.let { KeyValueRow("Szacowany czas", if (it < 90) "$it s" else "${it / 60} min") }
                 Hairline()

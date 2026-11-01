@@ -27,6 +27,8 @@ sealed interface UnlockResult {
  * Owns the encrypted vault files, PIN/biometric unwrapping and the app lock state.
  * The DEK is never cached: every unlock or signing request obtains it fresh and the caller wipes it after use.
  */
+/* Lockout counters use commit() deliberately: a failed attempt must be persisted before the result is reported. */
+@android.annotation.SuppressLint("ApplySharedPref")
 class SecurityManager(private val context: Context) {
     private val dir = File(context.noBackupFilesDir, "vault").apply { mkdirs() }
     private val keyFile = AtomicFile(File(dir, "keys.json"))

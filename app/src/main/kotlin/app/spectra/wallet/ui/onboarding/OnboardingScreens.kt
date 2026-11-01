@@ -108,7 +108,7 @@ import kotlinx.coroutines.launch
 fun OnboardingFlow(vm: OnboardingViewModel, onFinished: () -> Unit, onCancel: (() -> Unit)? = null) {
     AnimatedContent(vm.step, transitionSpec = { fadeIn(tween(260)) togetherWith fadeOut(tween(180)) }, label = "onboarding") { step ->
         when (step) {
-            OnboardingStep.WELCOME -> WelcomeScreen(vm::startCreate, vm::startImport)
+            OnboardingStep.WELCOME -> WelcomeScreen(vm::startCreate, vm::startImport, onCancel)
             OnboardingStep.PIN_CREATE, OnboardingStep.PIN_CONFIRM -> PinCreateScreen(vm)
             OnboardingStep.BIOMETRICS -> BiometricsScreen(vm)
             OnboardingStep.PHRASE_SHOW -> PhraseScreen(vm, onCancel)
@@ -165,9 +165,10 @@ private fun IconTile(icon: androidx.compose.ui.graphics.vector.ImageVector, size
 // ---------------- Welcome ----------------
 
 @Composable
-fun WelcomeScreen(onCreate: () -> Unit, onImport: () -> Unit) {
+fun WelcomeScreen(onCreate: () -> Unit, onImport: () -> Unit, onCancel: (() -> Unit)? = null) {
     var showPrivacy by remember { mutableStateOf(false) }
     Screen {
+        if (onCancel != null) app.spectra.wallet.ui.components.TopBar("Dodaj portfel", onClose = onCancel)
         Spacer(Modifier.weight(1f))
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             SpectraLogo()
@@ -177,7 +178,7 @@ fun WelcomeScreen(onCreate: () -> Unit, onImport: () -> Unit) {
             Text("Twój portfel krypto. Prosty,\nprzejrzysty i tylko twój.", style = Spectra.type.bodyMedium.copy(fontSize = Spectra.type.bodyStrong.fontSize), color = Spectra.colors.textSecondary, textAlign = TextAlign.Center)
         }
         Spacer(Modifier.weight(1.2f))
-        PrimaryButton("Utwórz portfel", onCreate)
+        PrimaryButton(if (onCancel != null) "Utwórz nową frazę" else "Utwórz portfel", onCreate)
         Spacer(Modifier.height(12.dp))
         SecondaryButton("Mam już portfel — importuj", onImport)
         Spacer(Modifier.height(14.dp))

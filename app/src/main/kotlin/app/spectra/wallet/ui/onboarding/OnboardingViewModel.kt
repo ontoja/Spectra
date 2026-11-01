@@ -22,7 +22,7 @@ enum class OnboardingMode { CREATE, IMPORT }
 data class VerifyQuestion(val position: Int, val options: List<String>)
 
 class OnboardingViewModel(private val c: AppContainer, val addingWallet: Boolean) : ViewModel() {
-    var step by mutableStateOf(if (addingWallet) OnboardingStep.IMPORT_PHRASE else OnboardingStep.WELCOME); private set
+    var step by mutableStateOf(OnboardingStep.WELCOME); private set
     var mode by mutableStateOf(if (addingWallet) OnboardingMode.IMPORT else OnboardingMode.CREATE); private set
     val pinExists: Boolean get() = c.security.hasCredentials()
 
