@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -258,8 +259,8 @@ fun KeyValueRow(label: String, value: String, valueColor: Color = Spectra.colors
     val c = Spectra.colors
     Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
         verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = Spectra.type.body, color = c.textSecondary, modifier = Modifier.weight(1f))
-        Text(value, style = if (strong) Spectra.type.label else Spectra.type.body, color = valueColor, textAlign = TextAlign.End, modifier = Modifier.weight(1.4f, fill = false))
+        Text(label, style = Spectra.type.body, color = c.textSecondary, modifier = Modifier.weight(1f).padding(end = 12.dp))
+        Text(value, style = if (strong) Spectra.type.label else Spectra.type.body, color = valueColor, textAlign = TextAlign.End, modifier = Modifier.widthIn(max = 210.dp))
         trailingIcon?.let { Spacer(Modifier.width(6.dp)); Icon(it, null, Modifier.size(16.dp), tint = c.textSecondary) }
     }
 }

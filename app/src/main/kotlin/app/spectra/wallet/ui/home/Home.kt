@@ -224,7 +224,7 @@ fun HomeScreen(main: MainViewModel, onAsset: (String) -> Unit, onSend: () -> Uni
                 Box(Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(c.positiveSoft), contentAlignment = Alignment.Center) { Icon(SpectraIcons.Earn, null, Modifier.size(20.dp), tint = c.positive) }
                 Column(Modifier.weight(1f)) {
                     Text("Stakuj SOL", style = Spectra.type.bodyStrong.copy(fontSize = Spectra.type.body.fontSize), color = c.text)
-                    Text("Natywny staking · nagrody nie są gwarantowane", style = Spectra.type.caption, color = c.textSecondary)
+                    Text("Natywny staking · bez gwarancji nagród", style = Spectra.type.caption, color = c.textSecondary)
                 }
                 Icon(SpectraIcons.Chevron, null, Modifier.size(18.dp), tint = c.textSecondary)
             }

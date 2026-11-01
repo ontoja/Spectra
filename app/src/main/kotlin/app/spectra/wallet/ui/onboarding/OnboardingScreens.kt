@@ -332,7 +332,7 @@ private fun PhraseScreen(vm: OnboardingViewModel, onCancel: (() -> Unit)?) {
         Box(Modifier.fillMaxWidth().glassSurface(RoundedCornerShape(26.dp)).padding(12.dp)) {
             PhraseGrid(vm.words, vm.revealed)
             if (!vm.revealed) {
-                Column(Modifier.matchParentSize().clip(RoundedCornerShape(20.dp)).background(Spectra.colors.background.copy(alpha = .55f)),
+                Column(Modifier.matchParentSize().clip(RoundedCornerShape(20.dp)).background(Spectra.colors.background.copy(alpha = .86f)),
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Row(Modifier.height(48.dp).clip(RoundedCornerShape(24.dp)).background(Spectra.colors.inverse).clickable(role = Role.Button) { vm.revealed = true }.padding(horizontal = 22.dp),
                         verticalAlignment = Alignment.CenterVertically) {

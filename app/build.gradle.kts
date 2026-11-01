@@ -43,6 +43,10 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
+        unitTests.all { test ->
+            // Allows pointing Robolectric at a Maven mirror (e.g. in rate-limited CI): -Probolectric.repoUrl=https://…/maven2
+            (findProperty("robolectric.repoUrl") as String?)?.let { test.systemProperty("robolectric.dependency.repo.url", it) }
+        }
     }
 }
 
@@ -84,6 +88,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(kotlin("test-junit"))
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.room.testing)

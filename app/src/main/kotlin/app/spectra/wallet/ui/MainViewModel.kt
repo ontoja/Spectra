@@ -34,7 +34,7 @@ data class Session(val prefs: UserPreferences, val accounts: List<AccountSummary
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MainViewModel(private val c: AppContainer, context: Context) : ViewModel() {
+class MainViewModel(private val c: AppContainer, context: Context, private val autoRefresh: Boolean = true) : ViewModel() {
     val session: StateFlow<Session?> = combine(c.prefs.flow, c.wallets.accounts) { p, accs ->
         Session(p, accs, accs.firstOrNull { it.account.id == p.activeAccountId } ?: accs.firstOrNull())
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -55,10 +55,10 @@ class MainViewModel(private val c: AppContainer, context: Context) : ViewModel()
         val cm = context.getSystemService(ConnectivityManager::class.java)
         _online.value = cm.activeNetwork?.let { cm.getNetworkCapabilities(it)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) } == true
         cm.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: AndroidNetwork) { val was = _online.value; _online.value = true; if (!was) refresh() }
+            override fun onAvailable(network: AndroidNetwork) { val was = _online.value; _online.value = true; if (!was && autoRefresh) refresh() }
             override fun onLost(network: AndroidNetwork) { _online.value = false }
         })
-        viewModelScope.launch {
+        if (autoRefresh) viewModelScope.launch {
             session.filterNotNull().map { it.scopeIds to it.env }.distinctUntilChanged().collect { refresh() }
         }
     }

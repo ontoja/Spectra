@@ -61,7 +61,7 @@ fun AuroraBackground(preset: AuroraPreset = AuroraPreset.HOME, modifier: Modifie
                 .then(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Modifier.blur(40.dp) else Modifier)
                 .drawBehind {
                     blobs.forEach { b ->
-                        val r = size.maxDimension * b.radiusFraction
+                        val r = size.maxDimension * b.radiusFraction * 0.72f
                         drawCircle(
                             Brush.radialGradient(listOf(b.color.copy(alpha = b.alpha * c.auroraStrength), b.color.copy(alpha = 0f)),
                                 center = Offset(size.width * b.x, size.height * b.y), radius = r),

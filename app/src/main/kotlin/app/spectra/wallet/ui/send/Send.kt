@@ -85,6 +85,8 @@ import app.spectra.wallet.ui.home.AssetRowItem
 import app.spectra.wallet.ui.format.Fmt
 import app.spectra.wallet.ui.theme.Spectra
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -116,8 +118,8 @@ class SendViewModel(private val c: AppContainer, private val main: MainViewModel
 
     init {
         viewModelScope.launch {
-            val rows = main.portfolio.value?.rows.orEmpty()
-            asset = rows.firstOrNull { it.token.id.key == initial } ?: rows.firstOrNull { it.token.id.isNative && it.amount.units.signum() > 0 } ?: rows.firstOrNull()
+            val rows = main.portfolio.filterNotNull().first().rows
+            if (asset == null) asset = rows.firstOrNull { it.token.id.key == initial } ?: rows.firstOrNull { it.token.id.isNative && it.amount.units.signum() > 0 } ?: rows.firstOrNull()
         }
     }
 
@@ -248,7 +250,7 @@ private fun Compose(main: MainViewModel, vm: SendViewModel, onClose: () -> Unit)
             }
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val fiat = vm.amount?.let { amt -> a?.unitPrice?.let { amt.toDecimal() * it } }
+                val fiat = (vm.amount ?: a?.token?.decimals?.let { Amount.zero(it) }.takeIf { vm.amountText.isEmpty() })?.let { amt -> a?.unitPrice?.let { amt.toDecimal() * it } }
                 Text("≈ " + (fiat?.let { Fmt.fiat(it.setScale(2, RoundingMode.HALF_UP), currency) } ?: "— ${Fmt.currencySymbol(currency)}"), style = Spectra.type.bodyMedium, color = col.textSecondary)
                 Spacer(Modifier.width(10.dp))
                 Chip("Max", vm.sendMax, vm::max)

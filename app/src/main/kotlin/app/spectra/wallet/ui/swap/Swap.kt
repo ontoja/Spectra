@@ -184,6 +184,7 @@ fun SwapScreen(main: MainViewModel) {
     val vm: SwapViewModel = viewModel(factory = factory { SwapViewModel(c, main) })
     val swaps by c.swaps.swaps.collectAsState(initial = emptyList())
     val tokens by c.db.portfolio().tokens().collectAsState(initial = emptyList())
+    @Suppress("UNUSED_VARIABLE") val portfolioState by main.portfolio.collectAsState() // recompose when balances change
     val col = Spectra.colors
     var pickFor by remember { mutableStateOf<Boolean?>(null) } // true = from, false = to
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -204,7 +205,7 @@ fun SwapScreen(main: MainViewModel) {
             }
             vm.available()?.let { Text("Dostępne ${Fmt.amountWithSymbol(it, vm.fromToken?.symbol ?: "")}", style = Spectra.type.caption, color = col.textSecondary) }
         }
-        Box(Modifier.fillMaxWidth().height(4.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.fillMaxWidth().padding(vertical = 6.dp), contentAlignment = Alignment.Center) {
             GlassIconButton(SpectraIcons.Swap, "Zamień kierunek", vm::flip, Modifier.size(44.dp), tint = col.primary)
         }
         SwapSide("Otrzymujesz", vm.toChain, vm.toToken, { vm.setTo(it) }, { pickFor = false }) {
