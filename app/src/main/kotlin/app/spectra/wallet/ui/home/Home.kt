@@ -72,6 +72,23 @@ import app.spectra.wallet.ui.settings.SettingsPage
 import app.spectra.wallet.ui.theme.Elevation
 import app.spectra.wallet.ui.theme.Radii
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import app.spectra.wallet.ui.components.pressScale
+import app.spectra.wallet.ui.components.pulse
+import app.spectra.wallet.ui.components.Reveal
+import app.spectra.wallet.ui.components.SkeletonRow
+import app.spectra.wallet.ui.components.animatedNumber
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.ripple
+import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
@@ -89,9 +106,10 @@ fun ChangeLine(abs: BigDecimal?, pct: Double?, currency: String, hidden: Boolean
 }
 
 @Composable
-fun AssetRowItem(r: AssetRow, currency: String, hidden: Boolean, onClick: () -> Unit) {
+fun AssetRowItem(r: AssetRow, currency: String, hidden: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val c = Spectra.colors
-    Row(Modifier.fillMaxWidth().heightIn(min = 60.dp).clip(RoundedCornerShape(Radii.tile)).clickable(role = Role.Button, onClick = onClick).padding(10.dp),
+    val interaction = remember { MutableInteractionSource() }
+    Row(modifier.fillMaxWidth().heightIn(min = 60.dp).pressScale(interaction, 0.98f).clip(RoundedCornerShape(Radii.tile)).clickable(interaction, ripple(), role = Role.Button, onClick = onClick).padding(10.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         AssetAvatar(r.token.symbol, r.token.id.network.chain, r.token.id.isNative)
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -113,7 +131,8 @@ fun AssetRowItem(r: AssetRow, currency: String, hidden: Boolean, onClick: () -> 
 @Composable
 private fun QuickAction(label: String, icon: ImageVector, primary: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val c = Spectra.colors
-    Column(modifier.clip(RoundedCornerShape(16.dp)).clickable(role = Role.Button, onClick = onClick).padding(vertical = 4.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val interaction = remember { MutableInteractionSource() }
+    Column(modifier.pressScale(interaction, 0.9f).clip(RoundedCornerShape(16.dp)).clickable(interaction, null, role = Role.Button, onClick = onClick).padding(vertical = 4.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Box(Modifier.size(56.dp).then(if (primary) Modifier.glassSurface(CircleShape).clip(CircleShape).background(c.primary) else Modifier.glassSurface(CircleShape)), contentAlignment = Alignment.Center) {
             Icon(icon, null, Modifier.size(22.dp), tint = if (primary) c.onPrimary else c.text)
         }
@@ -154,7 +173,7 @@ fun HomeScreen(main: MainViewModel, onAsset: (String) -> Unit, onSend: () -> Uni
                 }
                 Box {
                     GlassIconButton(SpectraIcons.Bell, if (inFlight.isNotEmpty()) "Powiadomienia, ${inFlight.size} nowe" else "Powiadomienia", { notifications = true })
-                    if (inFlight.isNotEmpty()) Box(Modifier.align(Alignment.TopEnd).padding(top = 10.dp, end = 11.dp).size(8.dp).clip(CircleShape).background(c.primary))
+                    if (inFlight.isNotEmpty()) Box(Modifier.align(Alignment.TopEnd).padding(top = 10.dp, end = 11.dp).size(8.dp).pulse(true, 0.4f, 1100).clip(CircleShape).background(c.primary))
                 }
             }
 
@@ -167,16 +186,22 @@ fun HomeScreen(main: MainViewModel, onAsset: (String) -> Unit, onSend: () -> Uni
                     .semantics { contentDescription = if (hidden) "Pokaż saldo" else "Ukryj saldo" }.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text((if (s.prefs.aggregatePortfolio) "Wszystkie konta" else s.active?.account?.name ?: "") + " · " + currency, style = Spectra.type.label, color = c.textSecondary)
                     Spacer(Modifier.width(6.dp))
-                    Icon(if (hidden) SpectraIcons.EyeOff else SpectraIcons.Eye, null, Modifier.size(16.dp), tint = c.textSecondary)
+                    AnimatedContent(hidden, label = "eye") { h -> Icon(if (h) SpectraIcons.EyeOff else SpectraIcons.Eye, null, Modifier.size(16.dp), tint = c.textSecondary) }
                 }
                 Spacer(Modifier.height(6.dp))
                 if (s.env == NetworkEnv.TESTNET) {
                     Text("—", style = Spectra.type.balanceHero, color = c.text)
                 } else {
-                    val (int, dec) = Fmt.fiatParts(p?.totalFiat ?: BigDecimal.ZERO, currency)
-                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.semantics(mergeDescendants = true) { }) {
-                        Text(if (hidden) Fmt.MASK else int, style = Spectra.type.balanceHero, color = c.text)
-                        Text(if (hidden) " " + Fmt.currencySymbol(currency) else dec, style = Spectra.type.balanceHeroDecimals, color = c.text, modifier = Modifier.padding(bottom = 4.dp))
+                    val shown = animatedNumber(p?.totalFiat?.toDouble() ?: 0.0)
+                    val (int, dec) = Fmt.fiatParts(BigDecimal.valueOf(shown).setScale(2, java.math.RoundingMode.HALF_UP), currency)
+                    val hd = if (Spectra.reducedMotion) 0 else 240
+                    AnimatedContent(hidden, transitionSpec = {
+                        (fadeIn(tween(hd)) + slideInVertically(tween(hd)) { it / 3 }) togetherWith (fadeOut(tween(hd / 2)) + slideOutVertically(tween(hd)) { -it / 3 })
+                    }, label = "hero", modifier = Modifier.enterAnimation(1)) { isHidden ->
+                        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.semantics(mergeDescendants = true) { }) {
+                            Text(if (isHidden) Fmt.MASK else int, style = Spectra.type.balanceHero, color = c.text)
+                            Text(if (isHidden) " " + Fmt.currencySymbol(currency) else dec, style = Spectra.type.balanceHeroDecimals, color = c.text, modifier = Modifier.padding(bottom = 4.dp))
+                        }
                     }
                     Spacer(Modifier.height(12.dp))
                     val total = p?.totalFiat
@@ -192,34 +217,39 @@ fun HomeScreen(main: MainViewModel, onAsset: (String) -> Unit, onSend: () -> Uni
             }
 
             Row(Modifier.fillMaxWidth().padding(top = 32.dp)) {
-                QuickAction("Wyślij", SpectraIcons.Send, true, onSend, Modifier.weight(1f))
-                QuickAction("Odbierz", SpectraIcons.Receive, false, onReceive, Modifier.weight(1f))
-                QuickAction("Wymień", SpectraIcons.Swap, false, onSwap, Modifier.weight(1f))
-                QuickAction("Kup", SpectraIcons.Plus, false, { buyInfo = true }, Modifier.weight(1f))
+                QuickAction("Wyślij", SpectraIcons.Send, true, onSend, Modifier.weight(1f).enterAnimation(2))
+                QuickAction("Odbierz", SpectraIcons.Receive, false, onReceive, Modifier.weight(1f).enterAnimation(3))
+                QuickAction("Wymień", SpectraIcons.Swap, false, onSwap, Modifier.weight(1f).enterAnimation(4))
+                QuickAction("Kup", SpectraIcons.Plus, false, { buyInfo = true }, Modifier.weight(1f).enterAnimation(5))
             }
 
-            if (main.refreshErrors.isNotEmpty()) {
+            Reveal(main.refreshErrors.isNotEmpty()) {
                 Spacer(Modifier.height(16.dp))
                 NoticeCard("Nie wszystkie sieci odpowiedziały", main.refreshErrors.entries.joinToString("\n") { "${it.key.displayName}: ${it.value}" } + "\nPokazujemy ostatnie zapisane salda.", Tone.WARNING, SpectraIcons.Alert)
             }
 
             // Assets card
-            Column(Modifier.fillMaxWidth().padding(top = 28.dp).glassSurface(RoundedCornerShape(Radii.cardLarge), elevation = Elevation.card).padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 6.dp)) {
+            Column(Modifier.fillMaxWidth().padding(top = 28.dp).enterAnimation(6, distance = 26f).glassSurface(RoundedCornerShape(Radii.cardLarge), elevation = Elevation.card)
+                .animateContentSize(app.spectra.wallet.ui.theme.spectraTween(app.spectra.wallet.ui.theme.Motion.STANDARD)).padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 6.dp)) {
                 SegmentedTabs(listOf("Aktywa", "Rynek", "Ukryte"), tab, { tab = it })
                 Spacer(Modifier.height(4.dp))
-                when (tab) {
+                val td = if (Spectra.reducedMotion) 0 else 220
+                AnimatedContent(tab, transitionSpec = { fadeIn(tween(td)) togetherWith fadeOut(tween(td / 2)) }, label = "homeTab") { t -> Column {
+                when (t) {
                     0 -> {
                         val rows = p?.rows.orEmpty()
-                        if (p == null) app.spectra.wallet.ui.components.LoadingState("Wczytywanie sald…")
-                        else if (rows.isEmpty()) EmptyState("Brak aktywów", if (main.refreshing) "Pobieranie sald…" else "Odbierz środki, aby zobaczyć je tutaj.", SpectraIcons.Vault)
-                        else rows.forEach { r -> AssetRowItem(r, currency, hidden) { onAsset(r.token.id.key) } }
+                        if (p == null || (rows.isEmpty() && main.refreshing)) { SkeletonRow(); SkeletonRow() }
+                        else if (rows.isEmpty()) EmptyState("Brak aktywów", "Odbierz środki, aby zobaczyć je tutaj.", SpectraIcons.Vault)
+                        else rows.forEachIndexed { i, r -> AssetRowItem(r, currency, hidden, Modifier.enterAnimation(i, key = r.token.id.key)) { onAsset(r.token.id.key) } }
                     }
                     1 -> MarketTab(main)
                     else -> HiddenTab(main, onAsset)
                 }
+                } }
             }
 
-            Row(Modifier.fillMaxWidth().padding(top = 12.dp).glassSurface(RoundedCornerShape(24.dp), elevation = Elevation.card).clip(RoundedCornerShape(24.dp)).clickable(role = Role.Button, onClick = onStake)
+            val stakeInteraction = remember { MutableInteractionSource() }
+            Row(Modifier.fillMaxWidth().padding(top = 12.dp).enterAnimation(7, distance = 26f).pressScale(stakeInteraction, 0.98f).glassSurface(RoundedCornerShape(24.dp), elevation = Elevation.card).clip(RoundedCornerShape(24.dp)).clickable(stakeInteraction, ripple(), role = Role.Button, onClick = onStake)
                 .padding(start = 12.dp, end = 16.dp, top = 12.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(c.positiveSoft), contentAlignment = Alignment.Center) { Icon(SpectraIcons.Earn, null, Modifier.size(20.dp), tint = c.positive) }
                 Column(Modifier.weight(1f)) {
@@ -259,10 +289,10 @@ private fun MarketTab(main: MainViewModel) {
     val currency = session?.prefs?.currency ?: "PLN"
     val prices by container.db.portfolio().prices(currency).collectAsState(initial = emptyList())
     val c = Spectra.colors
-    Chain.entries.forEach { ch ->
+    Chain.entries.forEachIndexed { idx, ch ->
         val id = app.spectra.core.model.TokenInfo.native(Network(ch, NetworkEnv.MAINNET)).coingeckoId
         val p = prices.firstOrNull { it.priceKey == "cg:$id" }
-        Row(Modifier.fillMaxWidth().heightIn(min = 60.dp).padding(10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 60.dp).enterAnimation(idx).padding(10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AssetAvatar(ch.symbol, ch, true)
             Column(Modifier.weight(1f)) {
                 Text(ch.displayName, style = Spectra.type.bodyStrong, color = c.text)

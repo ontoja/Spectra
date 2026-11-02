@@ -12,6 +12,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -102,11 +104,28 @@ import app.spectra.wallet.ui.components.Tone
 import app.spectra.wallet.ui.components.glassSurface
 import app.spectra.wallet.ui.format.Fmt
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import app.spectra.wallet.ui.components.floating
+import app.spectra.wallet.ui.components.pulse
+import app.spectra.wallet.ui.components.Reveal
+import app.spectra.wallet.ui.components.FadeAwayOverlay
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.scaleOut
 import kotlinx.coroutines.launch
 
 @Composable
 fun OnboardingFlow(vm: OnboardingViewModel, onFinished: () -> Unit, onCancel: (() -> Unit)? = null) {
-    AnimatedContent(vm.step, transitionSpec = { fadeIn(tween(260)) togetherWith fadeOut(tween(180)) }, label = "onboarding") { step ->
+    val d = if (Spectra.reducedMotion) 0 else 320
+    AnimatedContent(vm.step, transitionSpec = {
+        val forward = targetState.ordinal >= initialState.ordinal
+        val dir = if (forward) 1 else -1
+        (fadeIn(tween(d)) + slideInHorizontally(tween(d)) { dir * it / 5 }) togetherWith (fadeOut(tween(d / 2)) + slideOutHorizontally(tween(d)) { -dir * it / 5 })
+    }, label = "onboarding") { step ->
         when (step) {
             OnboardingStep.WELCOME -> WelcomeScreen(vm::startCreate, vm::startImport, onCancel)
             OnboardingStep.PIN_CREATE, OnboardingStep.PIN_CONFIRM -> PinCreateScreen(vm)
@@ -171,16 +190,17 @@ fun WelcomeScreen(onCreate: () -> Unit, onImport: () -> Unit, onCancel: (() -> U
         if (onCancel != null) app.spectra.wallet.ui.components.TopBar("Dodaj portfel", onClose = onCancel)
         Spacer(Modifier.weight(1f))
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            SpectraLogo()
+            Box(Modifier.enterAnimation(0, distance = 28f).floating()) { SpectraLogo() }
             Spacer(Modifier.height(24.dp))
-            Text("Spectra", style = Spectra.type.display, color = Spectra.colors.text, modifier = Modifier.semantics { heading() })
+            Text("Spectra", style = Spectra.type.display, color = Spectra.colors.text, modifier = Modifier.enterAnimation(2).semantics { heading() })
             Spacer(Modifier.height(10.dp))
-            Text("Twój portfel krypto. Prosty,\nprzejrzysty i tylko twój.", style = Spectra.type.bodyMedium.copy(fontSize = Spectra.type.bodyStrong.fontSize), color = Spectra.colors.textSecondary, textAlign = TextAlign.Center)
+            Text("Twój portfel krypto. Prosty,\nprzejrzysty i tylko twój.", style = Spectra.type.bodyMedium.copy(fontSize = Spectra.type.bodyStrong.fontSize), color = Spectra.colors.textSecondary, textAlign = TextAlign.Center,
+                modifier = Modifier.enterAnimation(3))
         }
         Spacer(Modifier.weight(1.2f))
-        PrimaryButton(if (onCancel != null) "Utwórz nową frazę" else "Utwórz portfel", onCreate)
+        PrimaryButton(if (onCancel != null) "Utwórz nową frazę" else "Utwórz portfel", onCreate, Modifier.enterAnimation(5, distance = 30f))
         Spacer(Modifier.height(12.dp))
-        SecondaryButton("Mam już portfel — importuj", onImport)
+        SecondaryButton("Mam już portfel — importuj", onImport, Modifier.enterAnimation(6, distance = 30f))
         Spacer(Modifier.height(14.dp))
         Text("Wersja eksperymentalna 0.1 — nie przechowuj tu znaczących środków. Bez konta, e-maila i telemetrii.",
             style = Spectra.type.caption, color = Spectra.colors.textSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
@@ -199,15 +219,20 @@ private fun PinCreateScreen(vm: OnboardingViewModel) {
         StepProgress(1, 3, vm::back)
         Spacer(Modifier.height(40.dp))
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            IconTile(SpectraIcons.Lock)
+            Box(Modifier.enterAnimation(0)) { IconTile(SpectraIcons.Lock) }
             Spacer(Modifier.height(18.dp))
-            Title(if (confirming) "Powtórz PIN" else "Ustaw PIN")
-            Spacer(Modifier.height(8.dp))
-            Subtitle(if (confirming) "Wpisz ten sam sześciocyfrowy PIN jeszcze raz." else "Będziesz go używać do odblokowania portfela i potwierdzania przelewów.")
+            val td = if (Spectra.reducedMotion) 0 else 220
+            AnimatedContent(confirming, transitionSpec = { fadeIn(tween(td)) togetherWith fadeOut(tween(td / 2)) }, label = "pinTitle") { conf ->
+                Column {
+                    Title(if (conf) "Powtórz PIN" else "Ustaw PIN")
+                    Spacer(Modifier.height(8.dp))
+                    Subtitle(if (conf) "Wpisz ten sam sześciocyfrowy PIN jeszcze raz." else "Będziesz go używać do odblokowania portfela i potwierdzania przelewów.")
+                }
+            }
             Spacer(Modifier.height(24.dp))
             PinDots(vm.pinEntry.length, if (vm.pinError != null) PinState.ERROR else PinState.IDLE)
             Box(Modifier.heightIn(min = 40.dp).padding(top = 12.dp)) {
-                vm.pinError?.let { Text(it, style = Spectra.type.label, color = Spectra.colors.negative, textAlign = TextAlign.Center) }
+                Reveal(vm.pinError != null) { Text(vm.pinError ?: "", style = Spectra.type.label, color = Spectra.colors.negative, textAlign = TextAlign.Center) }
             }
         }
         Spacer(Modifier.weight(1f))
@@ -230,7 +255,7 @@ private fun BiometricsScreen(vm: OnboardingViewModel) {
         StepProgress(2, 3, null)
         Spacer(Modifier.weight(0.6f))
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(Modifier.size(130.dp).glassSurface(RoundedCornerShape(38.dp), strong = true), contentAlignment = Alignment.Center) {
+            Box(Modifier.enterAnimation(0, distance = 26f).floating(4f).size(130.dp).glassSurface(RoundedCornerShape(38.dp), strong = true), contentAlignment = Alignment.Center) {
                 Icon(SpectraIcons.Fingerprint, null, Modifier.size(56.dp), tint = if (availability == BiometricAvailability.AVAILABLE) Spectra.colors.primary else Spectra.colors.textDisabled)
                 if (availability != BiometricAvailability.AVAILABLE) Canvas(Modifier.size(64.dp)) {
                     drawLine(Color(0xFFB42A40), Offset(0f, 0f), Offset(size.width, size.height), strokeWidth = 5f, cap = StrokeCap.Round)
@@ -247,7 +272,7 @@ private fun BiometricsScreen(vm: OnboardingViewModel) {
                         listOf(SpectraIcons.Bolt to "Odblokowanie jednym dotknięciem", SpectraIcons.Send to "Szybkie potwierdzanie przelewów",
                             SpectraIcons.Shield to "Odcisk zostaje w telefonie — Spectra go nie widzi").forEachIndexed { i, (ic, t) ->
                             if (i > 0) Hairline()
-                            Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).enterAnimation(3 + i), verticalAlignment = Alignment.CenterVertically) {
                                 Icon(ic, null, Modifier.size(20.dp), tint = Spectra.colors.primary)
                                 Spacer(Modifier.width(14.dp))
                                 Text(t, style = Spectra.type.bodyMedium, color = Spectra.colors.text)
@@ -304,12 +329,14 @@ private fun BiometricsScreen(vm: OnboardingViewModel) {
 
 @Composable
 private fun PhraseGrid(words: List<String>, revealed: Boolean) {
+    val c = Spectra.colors
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         words.chunked(3).forEachIndexed { row, chunk ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 chunk.forEachIndexed { col, w ->
                     val n = row * 3 + col + 1
-                    Row(Modifier.weight(1f).height(44.dp).clip(RoundedCornerShape(14.dp)).background(Spectra.colors.glassHighlight).padding(horizontal = 10.dp)
+                    Row(Modifier.weight(1f).height(44.dp).then(if (revealed) Modifier.enterAnimation(n - 1, key = true, distance = 10f, stepMs = 35) else Modifier)
+                        .clip(RoundedCornerShape(14.dp)).background(c.glassHighlight).padding(horizontal = 10.dp)
                         .semantics { contentDescription = if (revealed) "Słowo $n: $w" else "Słowo $n ukryte" }, verticalAlignment = Alignment.CenterVertically) {
                         Text("$n", style = Spectra.type.micro.copy(fontSize = Spectra.type.captionStrong.fontSize * 0.92f), color = Spectra.colors.textSecondary, modifier = Modifier.width(18.dp))
                         Text(if (revealed) w else "•••••", style = Spectra.type.label.copy(fontSize = Spectra.type.body.fontSize), color = if (revealed) Spectra.colors.text else Spectra.colors.textDisabled, maxLines = 1)
@@ -332,8 +359,8 @@ private fun PhraseScreen(vm: OnboardingViewModel, onCancel: (() -> Unit)?) {
         Spacer(Modifier.height(20.dp))
         Box(Modifier.fillMaxWidth().glassSurface(RoundedCornerShape(26.dp)).padding(12.dp)) {
             PhraseGrid(vm.words, vm.revealed)
-            if (!vm.revealed) {
-                Column(Modifier.matchParentSize().clip(RoundedCornerShape(20.dp)).background(Spectra.colors.background.copy(alpha = .86f)),
+            FadeAwayOverlay(!vm.revealed, Modifier.matchParentSize()) {
+                Column(Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(Spectra.colors.background.copy(alpha = .86f)),
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Row(Modifier.height(48.dp).clip(RoundedCornerShape(24.dp)).background(Spectra.colors.inverse).clickable(role = Role.Button) { vm.revealed = true }.padding(horizontal = 22.dp),
                         verticalAlignment = Alignment.CenterVertically) {
@@ -367,9 +394,9 @@ private fun VerifyScreen(vm: OnboardingViewModel) {
         Spacer(Modifier.height(8.dp))
         Subtitle("Wybierz właściwe słowo dla każdej pozycji.", center = false)
         Spacer(Modifier.height(20.dp))
-        vm.questions.forEach { q ->
+        vm.questions.forEachIndexed { qi, q ->
             val picked = vm.picks[q.position]
-            GlassCard(Modifier.fillMaxWidth().padding(bottom = 12.dp), radius = 24.dp, padding = androidx.compose.foundation.layout.PaddingValues(14.dp)) {
+            GlassCard(Modifier.fillMaxWidth().enterAnimation(qi).padding(bottom = 12.dp), radius = 24.dp, padding = androidx.compose.foundation.layout.PaddingValues(14.dp)) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 2.dp)) {
                     Text("Słowo nr ${q.position}", style = Spectra.type.label, color = Spectra.colors.text, modifier = Modifier.weight(1f))
                     if (picked != null) Text(if (vm.isCorrect(q.position)) "Zgadza się" else "To nie to słowo", style = Spectra.type.captionStrong,
@@ -380,10 +407,13 @@ private fun VerifyScreen(vm: OnboardingViewModel) {
                     q.options.forEach { w ->
                         val sel = picked == w
                         val correct = w == vm.words[q.position - 1]
+                        val bg by animateColorAsState(if (sel) (if (correct) Spectra.colors.positive else Spectra.colors.negativeStrong) else Spectra.colors.chip,
+                            app.spectra.wallet.ui.theme.spectraTween(app.spectra.wallet.ui.theme.Motion.STANDARD), label = "opt")
+                        val fg by animateColorAsState(if (sel) Color.White else Spectra.colors.text, app.spectra.wallet.ui.theme.spectraTween(app.spectra.wallet.ui.theme.Motion.STANDARD), label = "optFg")
                         Box(Modifier.weight(1f).height(44.dp).clip(RoundedCornerShape(22.dp))
-                            .background(if (sel) (if (correct) Spectra.colors.positive else Spectra.colors.negativeStrong) else Spectra.colors.chip)
+                            .background(bg)
                             .clickable(role = Role.Button) { vm.pick(q.position, w) }.semantics { stateDescription = if (sel) "Wybrano" else "" }, contentAlignment = Alignment.Center) {
-                            Text(w, style = Spectra.type.label.copy(fontSize = Spectra.type.body.fontSize), color = if (sel) Color.White else Spectra.colors.text)
+                            Text(w, style = Spectra.type.label.copy(fontSize = Spectra.type.body.fontSize), color = fg)
                         }
                     }
                 }
@@ -517,7 +547,9 @@ private fun PreparingScreen(vm: OnboardingViewModel) {
         }
         Spacer(Modifier.height(8.dp))
         Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(c.text.copy(alpha = .08f))) {
-            Box(Modifier.fillMaxWidth(vm.progressStep / vm.progressTotal.toFloat()).height(8.dp).clip(RoundedCornerShape(4.dp)).background(c.primary))
+            val frac by animateFloatAsState(vm.progressStep / vm.progressTotal.toFloat(),
+                if (Spectra.reducedMotion) snap() else spring(dampingRatio = 0.9f, stiffness = 120f), label = "progress")
+            Box(Modifier.fillMaxWidth(frac).height(8.dp).clip(RoundedCornerShape(4.dp)).background(c.primary))
         }
         Spacer(Modifier.height(16.dp))
         GlassCard(Modifier.fillMaxWidth(), padding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 6.dp)) {
@@ -531,22 +563,27 @@ private fun PreparingScreen(vm: OnboardingViewModel) {
                         Text(chain.displayName, style = Spectra.type.bodyStrong, color = c.text)
                         Text(scheme.path(0, NetworkEnv.MAINNET)?.toString() ?: scheme.label, style = Spectra.type.mono, color = c.textSecondary)
                     }
-                    when {
-                        vm.progressStep >= doneAt -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    val status = when { vm.progressStep >= doneAt -> 2; vm.progressStep == doneAt - 1 -> 1; else -> 0 }
+                    val sd = if (Spectra.reducedMotion) 0 else 260
+                    AnimatedContent(status, transitionSpec = {
+                        val d = sd
+                        (fadeIn(tween(d)) + androidx.compose.animation.scaleIn(tween(d), 0.6f)) togetherWith fadeOut(tween(d / 2))
+                    }, label = "chainStatus") { st -> when {
+                        st == 2 -> Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(Modifier.size(24.dp).clip(CircleShape).background(c.positive), contentAlignment = Alignment.Center) { Icon(SpectraIcons.Check, null, Modifier.size(14.dp), tint = Color.White) }
                             Spacer(Modifier.width(6.dp)); Text("Gotowe", style = Spectra.type.label, color = c.positive)
                         }
-                        vm.progressStep == doneAt - 1 -> Row(verticalAlignment = Alignment.CenterVertically) {
+                        st == 1 -> Row(verticalAlignment = Alignment.CenterVertically) {
                             CircularProgressIndicator(Modifier.size(20.dp), color = c.primary, strokeWidth = 2.dp)
                             Spacer(Modifier.width(6.dp)); Text("Generowanie", style = Spectra.type.label, color = c.link)
                         }
                         else -> Text("Oczekuje", style = Spectra.type.label, color = c.textSecondary)
-                    }
+                    } }
                 }
             }
         }
         Spacer(Modifier.weight(1f))
-        Text("Nie zamykaj aplikacji", style = Spectra.type.bodyMedium, color = c.textSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        Text("Nie zamykaj aplikacji", style = Spectra.type.bodyMedium, color = c.textSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().pulse(true, 0.45f, 1400))
     }
     LaunchedEffect(Unit) { }
 }
@@ -560,14 +597,22 @@ private fun ReadyScreen(vm: OnboardingViewModel, onDone: () -> Unit) {
     var qrFor by remember { mutableStateOf<Pair<Chain, String>?>(null) }
     Screen(AuroraPreset.SUCCESS, scroll = true) {
         Spacer(Modifier.height(40.dp))
+        val reduced = Spectra.reducedMotion
+        val pop = remember { androidx.compose.animation.core.Animatable(if (reduced) 1f else 0f) }
+        LaunchedEffect(Unit) { if (!reduced) { kotlinx.coroutines.delay(180); pop.animateTo(1f, spring(dampingRatio = 0.42f, stiffness = 320f)) } }
+        val ring = if (reduced) null else rememberInfiniteTransition(label = "ring").animateFloat(0f, 1f, infiniteRepeatable(tween(2400, easing = LinearEasing)), label = "ringT")
         Box(Modifier.fillMaxWidth().height(190.dp), contentAlignment = Alignment.Center) {
             Box(Modifier.size(180.dp).clip(CircleShape).border(2.dp, c.positive.copy(alpha = .18f), CircleShape))
-            Box(Modifier.size(124.dp).glassSurface(RoundedCornerShape(36.dp), strong = true), contentAlignment = Alignment.Center) {
-                Box(Modifier.size(56.dp).clip(CircleShape).background(c.positive), contentAlignment = Alignment.Center) { Icon(SpectraIcons.Check, null, Modifier.size(30.dp), tint = Color.White) }
+            ring?.let { r -> Box(Modifier.size(150.dp).graphicsLayer { val v = r.value; scaleX = 0.85f + v * 0.45f; scaleY = scaleX; alpha = (1f - v) * 0.6f }
+                .clip(CircleShape).border(2.dp, c.positive.copy(alpha = .5f), CircleShape)) }
+            Box(Modifier.size(124.dp).graphicsLayer { scaleX = 0.7f + 0.3f * pop.value; scaleY = scaleX; alpha = pop.value.coerceIn(0f, 1f) }
+                .glassSurface(RoundedCornerShape(36.dp), strong = true), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(56.dp).graphicsLayer { scaleX = pop.value; scaleY = pop.value; rotationZ = (1f - pop.value) * -30f }.clip(CircleShape).background(c.positive),
+                    contentAlignment = Alignment.Center) { Icon(SpectraIcons.Check, null, Modifier.size(30.dp), tint = Color.White) }
             }
         }
         Spacer(Modifier.height(16.dp))
-        Title("Portfel gotowy")
+        Box(Modifier.enterAnimation(2)) { Title("Portfel gotowy") }
         Spacer(Modifier.height(8.dp))
         Subtitle("${acc?.account?.name ?: "Konto"} działa w 3 sieciach. Dotknij sieci, żeby zobaczyć pełny adres i kod QR.")
         Spacer(Modifier.height(20.dp))
@@ -575,7 +620,7 @@ private fun ReadyScreen(vm: OnboardingViewModel, onDone: () -> Unit) {
             Chain.entries.forEachIndexed { i, chain ->
                 if (i > 0) Hairline()
                 val addr = acc?.view(Network(chain, NetworkEnv.MAINNET))?.primaryAddress ?: ""
-                Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).clickable(role = Role.Button) { qrFor = chain to addr }, verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).enterAnimation(4 + i, stepMs = 70).clickable(role = Role.Button) { qrFor = chain to addr }, verticalAlignment = Alignment.CenterVertically) {
                     AssetAvatar(chain.symbol, chain, true)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
@@ -593,8 +638,8 @@ private fun ReadyScreen(vm: OnboardingViewModel, onDone: () -> Unit) {
         }
         Spacer(Modifier.height(14.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            listOfNotNull("PIN", if (vm.biometricsEnabled) "Biometria" else null, if (vm.mode == OnboardingMode.CREATE) "Kopia potwierdzona" else "Fraza zaimportowana").forEach {
-                Row(Modifier.clip(RoundedCornerShape(16.dp)).background(c.glassStrong).padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            listOfNotNull("PIN", if (vm.biometricsEnabled) "Biometria" else null, if (vm.mode == OnboardingMode.CREATE) "Kopia potwierdzona" else "Fraza zaimportowana").forEachIndexed { bi, it ->
+                Row(Modifier.enterAnimation(8 + bi, stepMs = 70).clip(RoundedCornerShape(16.dp)).background(c.glassStrong).padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(SpectraIcons.Check, null, Modifier.size(14.dp), tint = c.positive); Spacer(Modifier.width(6.dp))
                     Text(it, style = Spectra.type.captionStrong, color = c.text)
                 }

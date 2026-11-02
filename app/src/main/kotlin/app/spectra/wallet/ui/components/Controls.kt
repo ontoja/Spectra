@@ -35,6 +35,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.togetherWith
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -62,18 +67,25 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
     val active = enabled && !loading
     val bg by animateColorAsState(if (active) (if (destructive) c.negativeStrong else c.primary) else c.disabledFill, spectraTween(Motion.FAST), label = "btn")
     val shape = RoundedCornerShape(Radii.button)
+    val interaction = remember { MutableInteractionSource() }
     Row(
-        modifier.fillMaxWidth().height(56.dp)
+        modifier.fillMaxWidth().height(56.dp).pressScale(interaction, 0.97f)
             .then(if (active) Modifier.shadow(Elevation.primaryButton, shape, ambientColor = c.primary.copy(alpha = .3f), spotColor = c.primary.copy(alpha = .35f)) else Modifier)
             .clip(shape).background(bg)
-            .clickable(enabled = active, role = Role.Button, onClick = onClick)
+            .clickable(interaction, ripple(), enabled = active, role = Role.Button, onClick = onClick)
             .semantics { if (loading) stateDescription = "Trwa przetwarzanie" },
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (loading) CircularProgressIndicator(Modifier.size(20.dp), color = c.onPrimary, strokeWidth = 2.dp)
-        else {
-            icon?.let { Icon(it, null, Modifier.size(18.dp), tint = if (active) c.onPrimary else c.textDisabled); Spacer(Modifier.width(10.dp)) }
-            Text(text, style = Spectra.type.bodyStrong, color = if (active) c.onPrimary else c.textDisabled)
+        val d = if (Spectra.reducedMotion) 0 else Motion.FAST
+        androidx.compose.animation.AnimatedContent(loading, transitionSpec = {
+            (androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(d)) + androidx.compose.animation.scaleIn(androidx.compose.animation.core.tween(d), 0.8f)) togetherWith
+                androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(d))
+        }, label = "btnContent") { isLoading ->
+            if (isLoading) CircularProgressIndicator(Modifier.size(20.dp), color = c.onPrimary, strokeWidth = 2.dp)
+            else Row(verticalAlignment = Alignment.CenterVertically) {
+                icon?.let { Icon(it, null, Modifier.size(18.dp), tint = if (active) c.onPrimary else c.textDisabled); Spacer(Modifier.width(10.dp)) }
+                Text(text, style = Spectra.type.bodyStrong, color = if (active) c.onPrimary else c.textDisabled)
+            }
         }
     }
 }
@@ -82,9 +94,10 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
 fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, icon: ImageVector? = null) {
     val c = Spectra.colors
     val shape = RoundedCornerShape(Radii.button)
+    val interaction = remember { MutableInteractionSource() }
     Row(
-        modifier.fillMaxWidth().height(56.dp).glassSurface(shape, strong = true).clip(shape)
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
+        modifier.fillMaxWidth().height(56.dp).pressScale(interaction, 0.97f).glassSurface(shape, strong = true).clip(shape)
+            .clickable(interaction, ripple(), enabled = enabled, role = Role.Button, onClick = onClick),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
         icon?.let { Icon(it, null, Modifier.size(18.dp), tint = if (enabled) c.text else c.textDisabled); Spacer(Modifier.width(10.dp)) }
@@ -94,7 +107,8 @@ fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
 
 @Composable
 fun LinkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, icon: ImageVector? = null, color: Color = Spectra.colors.link) {
-    Row(modifier.defaultMinSize(minHeight = 44.dp).clip(RoundedCornerShape(22.dp)).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 16.dp),
+    val interaction = remember { MutableInteractionSource() }
+    Row(modifier.defaultMinSize(minHeight = 44.dp).pressScale(interaction).clip(RoundedCornerShape(22.dp)).clickable(interaction, ripple(), role = Role.Button, onClick = onClick).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
         Text(text, style = Spectra.type.label.copy(fontSize = Spectra.type.bodyStrong.fontSize), color = color)
         icon?.let { Spacer(Modifier.width(6.dp)); Icon(it, null, Modifier.size(16.dp), tint = color) }
@@ -103,9 +117,10 @@ fun LinkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier,
 
 @Composable
 fun GlassIconButton(icon: ImageVector, contentDescription: String, onClick: () -> Unit, modifier: Modifier = Modifier, size: Dp = 44.dp, tint: Color = Spectra.colors.text, iconSize: Dp = 20.dp, enabled: Boolean = true) {
+    val interaction = remember { MutableInteractionSource() }
     Box(
-        modifier.size(size).glassSurface(CircleShape).clip(CircleShape)
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick).semantics { this.contentDescription = contentDescription },
+        modifier.size(size).pressScale(interaction, 0.9f).glassSurface(CircleShape).clip(CircleShape)
+            .clickable(interaction, ripple(), enabled = enabled, role = Role.Button, onClick = onClick).semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) { Icon(icon, null, Modifier.size(iconSize), tint = if (enabled) tint else Spectra.colors.textDisabled) }
 }
@@ -157,15 +172,30 @@ fun AssetAvatar(symbol: String, chain: Chain?, isNative: Boolean, size: Dp = 42.
 @Composable
 fun SegmentedTabs(items: List<String>, selected: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier, fill: Boolean = false) {
     val c = Spectra.colors
-    Row(modifier.padding(2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        items.forEachIndexed { i, label ->
-            val sel = i == selected
-            val bg by animateColorAsState(if (sel) c.inverse else Color.Transparent, spectraTween(Motion.FAST), label = "tab")
-            Box(
-                (if (fill) Modifier.weight(1f) else Modifier).height(36.dp).clip(RoundedCornerShape(Radii.chip)).background(bg)
-                    .clickable(role = Role.Tab) { onSelect(i) }.semantics { stateDescription = if (sel) "Wybrano" else "" }.padding(horizontal = 14.dp),
-                contentAlignment = Alignment.Center,
-            ) { Text(label, style = Spectra.type.label, color = if (sel) c.onInverse else c.textSecondary, maxLines = 1) }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    // Measured x/width of each tab so a single pill can slide between them.
+    val bounds = remember(items) { androidx.compose.runtime.mutableStateMapOf<Int, Pair<Float, Float>>() }
+    val target = bounds[selected]
+    val indicatorX by androidx.compose.animation.core.animateFloatAsState(target?.first ?: 0f,
+        if (Spectra.reducedMotion) androidx.compose.animation.core.snap() else androidx.compose.animation.core.spring(dampingRatio = 0.8f, stiffness = 500f), label = "tabX")
+    val indicatorW by androidx.compose.animation.core.animateFloatAsState(target?.second ?: 0f,
+        if (Spectra.reducedMotion) androidx.compose.animation.core.snap() else androidx.compose.animation.core.spring(dampingRatio = 0.8f, stiffness = 500f), label = "tabW")
+    Box(modifier.padding(2.dp)) {
+        if (target != null) Box(Modifier.graphicsLayer { translationX = indicatorX }.width(with(density) { indicatorW.toDp() }).height(36.dp)
+            .clip(RoundedCornerShape(Radii.chip)).background(c.inverse))
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            items.forEachIndexed { i, label ->
+                val sel = i == selected
+                val fg by animateColorAsState(if (sel) c.onInverse else c.textSecondary, spectraTween(Motion.FAST), label = "tabFg")
+                val interaction = remember { MutableInteractionSource() }
+                Box(
+                    (if (fill) Modifier.weight(1f) else Modifier).height(36.dp)
+                        .onGloballyPositioned { bounds[i] = it.positionInParent().x to it.size.width.toFloat() }
+                        .pressScale(interaction, 0.95f).clip(RoundedCornerShape(Radii.chip))
+                        .clickable(interaction, ripple(), role = Role.Tab) { onSelect(i) }.semantics { stateDescription = if (sel) "Wybrano" else "" }.padding(horizontal = 14.dp),
+                    contentAlignment = Alignment.Center,
+                ) { Text(label, style = Spectra.type.label, color = fg, maxLines = 1) }
+            }
         }
     }
 }
@@ -174,7 +204,8 @@ fun SegmentedTabs(items: List<String>, selected: Int, onSelect: (Int) -> Unit, m
 fun Chip(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val c = Spectra.colors
     val bg by animateColorAsState(if (selected) c.inverse else c.chip, spectraTween(Motion.FAST), label = "chip")
-    Box(modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).background(bg).clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+    val interaction = remember { MutableInteractionSource() }
+    Box(modifier.height(44.dp).pressScale(interaction, 0.93f).clip(RoundedCornerShape(22.dp)).background(bg).clickable(interaction, ripple(), enabled = enabled, role = Role.Button, onClick = onClick)
         .semantics { stateDescription = if (selected) "Wybrano" else "" }.padding(horizontal = 14.dp), contentAlignment = Alignment.Center) {
         Text(text, style = Spectra.type.label, color = if (!enabled) c.textDisabled else if (selected) c.onInverse else c.text, maxLines = 1)
     }
@@ -195,10 +226,10 @@ fun toneColors(tone: Tone): Pair<Color, Color> {
 }
 
 @Composable
-fun StatusPill(text: String, tone: Tone, modifier: Modifier = Modifier, dot: Boolean = true) {
+fun StatusPill(text: String, tone: Tone, modifier: Modifier = Modifier, dot: Boolean = true, pulsing: Boolean = false) {
     val (bg, fg) = toneColors(tone)
-    Row(modifier.clip(RoundedCornerShape(12.dp)).background(bg).padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        if (dot) { Box(Modifier.size(6.dp).clip(CircleShape).background(fg)); Spacer(Modifier.width(6.dp)) }
+    Row(modifier.clip(RoundedCornerShape(12.dp)).background(bg).animateContentSize(spectraTween(Motion.STANDARD)).padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        if (dot || pulsing) { Box(Modifier.size(6.dp).pulse(pulsing).clip(CircleShape).background(fg)); Spacer(Modifier.width(6.dp)) }
         Text(text, style = Spectra.type.captionStrong, color = fg)
     }
 }
@@ -223,9 +254,10 @@ fun NoticeCard(title: String, body: String?, tone: Tone, icon: ImageVector = Spe
 @Composable
 fun SettingRow(title: String, subtitle: String? = null, icon: ImageVector? = null, onClick: (() -> Unit)? = null, trailing: @Composable (RowScope.() -> Unit)? = null, destructive: Boolean = false) {
     val c = Spectra.colors
+    val interaction = remember { MutableInteractionSource() }
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RoundedCornerShape(Radii.tile))
-            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).pressScale(interaction, 0.98f).clip(RoundedCornerShape(Radii.tile))
+            .then(if (onClick != null) Modifier.clickable(interaction, ripple(), role = Role.Button, onClick = onClick) else Modifier)
             .padding(horizontal = 10.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -275,7 +307,9 @@ fun CheckRow(checked: Boolean, onChange: (Boolean) -> Unit, label: String) {
         .semantics { stateDescription = if (checked) "Zaznaczono" else "Nie zaznaczono" }, verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(22.dp).clip(RoundedCornerShape(5.dp)).background(if (checked) c.primary else Color.Transparent)
             .border(1.5.dp, if (checked) c.primary else c.text.copy(alpha = .4f), RoundedCornerShape(5.dp)), contentAlignment = Alignment.Center) {
-            if (checked) Icon(SpectraIcons.Check, null, Modifier.size(16.dp), tint = c.onPrimary)
+            val checkScale by androidx.compose.animation.core.animateFloatAsState(if (checked) 1f else 0f,
+                if (Spectra.reducedMotion) androidx.compose.animation.core.snap() else androidx.compose.animation.core.spring(dampingRatio = 0.5f), label = "check")
+            Icon(SpectraIcons.Check, null, Modifier.size(16.dp).graphicsLayer { scaleX = checkScale; scaleY = checkScale }, tint = c.onPrimary)
         }
         Spacer(Modifier.width(Spacing.md))
         Text(label, style = Spectra.type.bodyMedium.copy(fontSize = Spectra.type.label.fontSize), color = c.text)

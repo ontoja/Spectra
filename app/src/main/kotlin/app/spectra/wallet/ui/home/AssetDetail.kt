@@ -71,21 +71,34 @@ import app.spectra.wallet.ui.components.TopBar
 import app.spectra.wallet.ui.components.glassSurface
 import app.spectra.wallet.ui.format.Fmt
 import app.spectra.wallet.ui.theme.Spectra
+import androidx.compose.animation.core.animateFloat
+import app.spectra.wallet.ui.components.enterAnimation
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 @Composable
 fun LineChart(points: List<Double>, modifier: Modifier = Modifier) {
     val c = Spectra.colors
+    // Draw the line in from left to right whenever new data arrives; the end marker then pops in.
+    val progress = remember(points) { androidx.compose.animation.core.Animatable(0f) }
+    val reduced = Spectra.reducedMotion
+    androidx.compose.runtime.LaunchedEffect(points) {
+        progress.animateTo(1f, if (reduced) androidx.compose.animation.core.snap() else androidx.compose.animation.core.tween(900, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+    }
+    val halo = if (Spectra.reducedMotion) null else androidx.compose.animation.core.rememberInfiniteTransition(label = "halo").animateFloat(0.15f, 0.45f,
+        androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(1100), androidx.compose.animation.core.RepeatMode.Reverse), label = "haloA")
     Canvas(modifier.semantics { contentDescription = "Wykres ceny, ${points.size} punktów" }) {
         if (points.size < 2) return@Canvas
         val min = points.min(); val max = points.max(); val span = (max - min).takeIf { it > 0 } ?: 1.0
         val stepX = size.width / (points.size - 1)
         fun y(v: Double) = (size.height * 0.9f - ((v - min) / span * size.height * 0.8f)).toFloat()
         val path = Path().apply { points.forEachIndexed { i, v -> if (i == 0) moveTo(0f, y(v)) else lineTo(i * stepX, y(v)) } }
-        drawPath(path, c.primary, style = Stroke(3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        val measure = androidx.compose.ui.graphics.PathMeasure().apply { setPath(path, false) }
+        val partial = Path().also { measure.getSegment(0f, measure.length * progress.value, it, true) }
+        drawPath(partial, c.primary, style = Stroke(3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        if (progress.value < 0.98f) return@Canvas
         val end = Offset(size.width - 2.dp.toPx(), y(points.last()))
-        drawCircle(c.primary.copy(alpha = .25f), 9.dp.toPx(), end)
+        drawCircle(c.primary.copy(alpha = halo?.value ?: .25f), 9.dp.toPx() * (1f + (halo?.value ?: 0f)), end)
         drawCircle(c.background, 5.dp.toPx(), end)
         drawCircle(c.primary, 5.dp.toPx(), end, style = Stroke(2.dp.toPx()))
     }

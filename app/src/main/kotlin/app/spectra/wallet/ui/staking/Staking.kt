@@ -75,6 +75,14 @@ import app.spectra.wallet.ui.components.Tone
 import app.spectra.wallet.ui.components.glassSurface
 import app.spectra.wallet.ui.format.Fmt
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import app.spectra.wallet.ui.components.Reveal
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.tween
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -174,7 +182,7 @@ fun StakingScreen(main: MainViewModel) {
         Box(Modifier.fillMaxWidth().glassSurface(RoundedCornerShape(26.dp)).padding(4.dp)) { SegmentedTabs(listOf("Solana", "Ethereum"), tab, { tab = it }, Modifier.fillMaxWidth(), fill = true) }
         Spacer(Modifier.height(12.dp))
         if (tab == 1) {
-            NoticeCard("Staking ETH niedostępny w v0.1", "Natywny staking Ethereum wymaga 32 ETH i infrastruktury walidatora, a staking płynny opiera się na kontraktach zewnętrznych. Spectra 0.1 nie oferuje żadnej z tych opcji.", Tone.NEUTRAL, SpectraIcons.Info)
+            NoticeCard(title = "Staking ETH niedostępny w v0.1", body = "Natywny staking Ethereum wymaga 32 ETH i infrastruktury walidatora, a staking płynny opiera się na kontraktach zewnętrznych. Spectra 0.1 nie oferuje żadnej z tych opcji.", tone = Tone.NEUTRAL, icon = SpectraIcons.Info, modifier = Modifier.enterAnimation(0, key = tab))
             return@Column
         }
         val o = vm.overview
@@ -182,14 +190,15 @@ fun StakingScreen(main: MainViewModel) {
             o == null && vm.loading -> LoadingState("Wczytywanie danych stakingu…")
             o == null && vm.loadError != null -> ErrorState(vm.loadError!!, vm::load)
         }
-        GlassCard(Modifier.fillMaxWidth(), padding = PaddingValues(18.dp)) {
+        GlassCard(Modifier.fillMaxWidth().enterAnimation(0), padding = PaddingValues(18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Inflacja sieci", style = Spectra.type.label, color = col.textSecondary, modifier = Modifier.weight(1f))
                 StatusPill(if (vm.env == NetworkEnv.TESTNET) "Solana Devnet" else "Sieć Solana", if (vm.env == NetworkEnv.TESTNET) Tone.WARNING else Tone.POSITIVE)
             }
             Spacer(Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(o?.inflationPct?.let { String.format(java.util.Locale.ROOT, "%.2f", it).replace('.', ',') + "%" } ?: "—", style = Spectra.type.display, color = col.text)
+                val infl = o?.inflationPct?.let { app.spectra.wallet.ui.components.animatedNumber(it) }
+                Text(infl?.let { String.format(java.util.Locale.ROOT, "%.2f", it).replace('.', ',') + "%" } ?: "—", style = Spectra.type.display, color = col.text)
                 Spacer(Modifier.width(8.dp))
                 Text("rocznie", style = Spectra.type.bodyStrong, color = col.textSecondary, modifier = Modifier.padding(bottom = 6.dp))
             }
@@ -207,7 +216,7 @@ fun StakingScreen(main: MainViewModel) {
             }
         }
         Spacer(Modifier.height(12.dp))
-        GlassCard(Modifier.fillMaxWidth(), padding = PaddingValues(18.dp)) {
+        GlassCard(Modifier.fillMaxWidth().enterAnimation(1), padding = PaddingValues(18.dp)) {
             Row { Text("Kwota", style = Spectra.type.label, color = col.text, modifier = Modifier.weight(1f)); Text("Dostępne " + Fmt.amountWithSymbol(Amount.of(o?.liquidLamports ?: 0, 9), "SOL"), style = Spectra.type.caption, color = col.textSecondary) }
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.Bottom) {
@@ -225,7 +234,7 @@ fun StakingScreen(main: MainViewModel) {
             }
         }
         Spacer(Modifier.height(12.dp))
-        GlassCard(Modifier.fillMaxWidth()) {
+        GlassCard(Modifier.fillMaxWidth().enterAnimation(2)) {
             KeyValueRow("Walidator", vm.selected?.let { Fmt.shortAddress(it.votePubkey, 6, 4) + " · ${it.commission}%" } ?: "wybierz", onClick = { pickValidator = true }, trailingIcon = SpectraIcons.Chevron)
             Hairline()
             KeyValueRow("Aktywacja / odblokowanie", "na granicy epoki" + (o?.epoch?.let { " (epoka ${it.epoch}: ${(it.progress * 100).toInt()}%)" } ?: ""))
@@ -233,8 +242,8 @@ fun StakingScreen(main: MainViewModel) {
             KeyValueRow("Rezerwa rent (zwracana)", vm.rentReserve?.let { Fmt.amountWithSymbol(Amount.of(it, 9), "SOL") } ?: "—", strong = false)
             Text("Konto stake'u pozostaje pod twoją kontrolą: Ty jesteś zarówno uprawnionym do stakingu, jak i do wypłaty.", style = Spectra.type.caption, color = col.textSecondary, modifier = Modifier.padding(top = 6.dp))
         }
-        vm.error?.let { Spacer(Modifier.height(10.dp)); NoticeCard("Nie udało się", it, Tone.NEGATIVE, SpectraIcons.Alert) }
-        vm.info?.let { Spacer(Modifier.height(10.dp)); NoticeCard("Wysłano", it, Tone.PRIMARY, SpectraIcons.Info) }
+        Reveal(vm.error != null) { Spacer(Modifier.height(10.dp)); NoticeCard("Nie udało się", vm.error ?: "", Tone.NEGATIVE, SpectraIcons.Alert) }
+        Reveal(vm.info != null) { Spacer(Modifier.height(10.dp)); NoticeCard("Wysłano", vm.info ?: "", Tone.PRIMARY, SpectraIcons.Info) }
         Spacer(Modifier.height(16.dp))
         PrimaryButton("Stakuj ${vm.amountText.ifEmpty { "0" }} SOL", vm::prepareDelegate, enabled = vm.amountText.isNotBlank() && vm.selected != null, loading = vm.busy)
         Spacer(Modifier.height(20.dp))
@@ -242,14 +251,15 @@ fun StakingScreen(main: MainViewModel) {
         Spacer(Modifier.height(8.dp))
         val positions = o?.positions.orEmpty()
         if (positions.isEmpty()) EmptyState("Brak kont stake'u", "Po delegacji pojawią się tutaj wraz ze stanem aktywacji.", SpectraIcons.Earn)
-        positions.forEach { p ->
-            GlassCard(Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
+        positions.forEachIndexed { pi, p ->
+            GlassCard(Modifier.fillMaxWidth().enterAnimation(pi, key = p.stakeAccount).padding(bottom = 10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(Fmt.amountWithSymbol(Amount.of(p.lamports, 9), "SOL"), style = Spectra.type.bodyStrong, color = col.text)
                         Text("Konto ${Fmt.shortAddress(p.stakeAccount)} · walidator ${p.voter?.let { Fmt.shortAddress(it) } ?: "—"}", style = Spectra.type.caption, color = col.textSecondary)
                     }
-                    StatusPill(stakeStateLabel(p.state), when (p.state) { StakeState.ACTIVE -> Tone.POSITIVE; StakeState.INACTIVE -> Tone.PRIMARY; else -> Tone.WARNING }, dot = false)
+                    StatusPill(stakeStateLabel(p.state), when (p.state) { StakeState.ACTIVE -> Tone.POSITIVE; StakeState.INACTIVE -> Tone.PRIMARY; else -> Tone.WARNING }, dot = false,
+                        pulsing = p.state == StakeState.ACTIVATING || p.state == StakeState.DEACTIVATING)
                 }
                 if (p.staker != session?.active?.view(app.spectra.core.model.Network(app.spectra.core.model.Chain.SOLANA, vm.env))?.primaryAddress)
                     Text("Uprawnienie do stakingu należy do innego adresu.", style = Spectra.type.caption, color = col.warning)

@@ -90,6 +90,14 @@ import app.spectra.wallet.ui.components.Tone
 import app.spectra.wallet.ui.components.TopBar
 import app.spectra.wallet.ui.format.Fmt
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import app.spectra.wallet.ui.components.Reveal
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.tween
 import app.spectra.wallet.ui.theme.ThemeMode
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -100,7 +108,8 @@ enum class SettingsPage(val title: String) {
 }
 
 @Composable
-private fun Card(content: @Composable ColumnScope.() -> Unit) = GlassCard(Modifier.fillMaxWidth().padding(bottom = 12.dp), padding = PaddingValues(6.dp), content = content)
+private fun Card(index: Int = 0, content: @Composable ColumnScope.() -> Unit) =
+    GlassCard(Modifier.fillMaxWidth().enterAnimation(index).padding(bottom = 12.dp), padding = PaddingValues(6.dp), content = content)
 
 @Composable
 fun SettingsScreen(main: MainViewModel, onOpen: (SettingsPage, String) -> Unit, onImport: () -> Unit) {
@@ -115,25 +124,25 @@ fun SettingsScreen(main: MainViewModel, onOpen: (SettingsPage, String) -> Unit, 
             if (!BuildConfig.ALLOW_MAINNET_SIGNING) " Podpisywanie w sieci głównej jest wyłączone." else "", Tone.WARNING, SpectraIcons.ShieldAlert)
         Spacer(Modifier.height(12.dp))
         SectionLabel("Konto")
-        Card {
+        Card(1) {
             SettingRow("Konta i portfele", "${s.accounts.size} kont · ${s.accounts.map { it.vault.id }.distinct().size} fraz", SpectraIcons.Profile, { onOpen(SettingsPage.ACCOUNTS, "") })
             SettingRow("Importuj lub utwórz portfel", "Dodaj kolejną frazę odzyskiwania", SpectraIcons.Plus, onImport)
             SettingRow("Tokeny", "Dodaj token, ukryte i spam", SpectraIcons.Coins, { onOpen(SettingsPage.TOKENS, "") })
         }
         SectionLabel("Bezpieczeństwo")
-        Card {
+        Card(2) {
             SettingRow("Bezpieczeństwo", "Blokada: ${s.prefs.autoLock.label} · biometria · PIN", SpectraIcons.Lock, { onOpen(SettingsPage.SECURITY, "") })
             SettingRow("Fraza odzyskiwania", "Wymaga potwierdzenia PIN-em", SpectraIcons.Key, { onOpen(SettingsPage.ACCOUNTS, "") })
         }
         SectionLabel("Preferencje")
-        Card {
+        Card(3) {
             SettingRow("Waluta", s.prefs.currency, SpectraIcons.Coins, { onOpen(SettingsPage.CURRENCY, "") })
             SettingRow("Wygląd", when (s.prefs.theme) { ThemeMode.LIGHT -> "Jasny"; ThemeMode.DARK -> "Ciemny"; ThemeMode.SYSTEM -> "Systemowy" }, SpectraIcons.Moon, { onOpen(SettingsPage.APPEARANCE, "") })
             SettingRow("Ukryj salda", null, SpectraIcons.EyeOff, trailing = { SpectraSwitch(s.prefs.hideBalances, { main.toggleHide() }, description = "Ukryj salda") })
             SettingRow("Saldo łączne", "Sumuj wszystkie konta", SpectraIcons.Vault, trailing = { SpectraSwitch(s.prefs.aggregatePortfolio, { main.setAggregate(it) }, description = "Saldo łączne") })
         }
         SectionLabel("Sieci")
-        Card {
+        Card(4) {
             SettingRow("Węzły RPC", "Główne, zapasowe i własne punkty końcowe", SpectraIcons.Server, { onOpen(SettingsPage.RPC, "") })
             SettingRow("Sieci testowe", "Devnet, Sepolia, Litecoin testnet", SpectraIcons.Globe, trailing = {
                 SpectraSwitch(s.prefs.testnetsEnabled, { v -> scope.launch { c.prefs.setTestnetsEnabled(v) } }, description = "Sieci testowe")
@@ -143,7 +152,7 @@ fun SettingsScreen(main: MainViewModel, onOpen: (SettingsPage, String) -> Unit, 
             })
         }
         SectionLabel("Informacje")
-        Card {
+        Card(5) {
             SettingRow("Prywatność", "Co widzą dostawcy sieci", SpectraIcons.Shield, { onOpen(SettingsPage.PRIVACY, "") })
             SettingRow("O Spectra Wallet", "Wersja ${BuildConfig.VERSION_NAME}", SpectraIcons.Info, { onOpen(SettingsPage.ABOUT, "") })
         }

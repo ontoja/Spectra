@@ -45,12 +45,17 @@ import app.spectra.wallet.ui.components.Tone
 import app.spectra.wallet.ui.components.glassSurface
 import app.spectra.wallet.ui.theme.AssetGradients
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.animateFloat
 import kotlinx.coroutines.launch
 
 @Composable
-fun AccountAvatar(size: androidx.compose.ui.unit.Dp) {
+fun AccountAvatar(size: androidx.compose.ui.unit.Dp, animated: Boolean = false) {
+    val spin = if (animated && !Spectra.reducedMotion) androidx.compose.animation.core.rememberInfiniteTransition(label = "avatar").animateFloat(0f, 360f,
+        androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(12_000, easing = androidx.compose.animation.core.LinearEasing)), label = "spin") else null
     Box(Modifier.size(size).glassSurface(CircleShape, strong = true).padding(size * 0.07f)) {
-        Box(Modifier.fillMaxSize().clip(CircleShape).background(Brush.sweepGradient(AssetGradients.avatar)))
+        Box(Modifier.fillMaxSize().graphicsLayer { rotationZ = spin?.value ?: 0f }.clip(CircleShape).background(Brush.sweepGradient(AssetGradients.avatar)))
     }
 }
 
@@ -63,11 +68,11 @@ fun LockScreen(c: AppContainer, accountName: String) {
         SecureScreen()
         Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 24.dp).padding(top = 72.dp, bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
-            AccountAvatar(76.dp)
+            Box(Modifier.enterAnimation(0, distance = 24f)) { AccountAvatar(76.dp, animated = true) }
             Spacer(Modifier.height(22.dp))
-            Text("Witaj ponownie", style = Spectra.type.title, color = Spectra.colors.text, modifier = Modifier.semantics { heading() })
+            Text("Witaj ponownie", style = Spectra.type.title, color = Spectra.colors.text, modifier = Modifier.enterAnimation(1).semantics { heading() })
             Spacer(Modifier.height(6.dp))
-            Text("Wpisz PIN, aby odblokować $accountName", style = Spectra.type.body, color = Spectra.colors.textSecondary, textAlign = TextAlign.Center)
+            Text("Wpisz PIN, aby odblokować $accountName", style = Spectra.type.body, color = Spectra.colors.textSecondary, textAlign = TextAlign.Center, modifier = Modifier.enterAnimation(2))
             Spacer(Modifier.height(32.dp))
             PinDots(auth.entry.length, auth.state)
             Box(Modifier.heightIn(min = 44.dp).padding(top = 12.dp)) {
@@ -76,7 +81,7 @@ fun LockScreen(c: AppContainer, accountName: String) {
                 msg?.let { Text(it, style = Spectra.type.label, color = Spectra.colors.negative, textAlign = TextAlign.Center) }
             }
             Spacer(Modifier.weight(1f))
-            NumericKeypad(auth::onKey, leftKey = if (auth.biometricEnabled) KeypadKey.Biometric else KeypadKey.Empty, enabled = !auth.busy)
+            NumericKeypad(auth::onKey, leftKey = if (auth.biometricEnabled) KeypadKey.Biometric else KeypadKey.Empty, enabled = !auth.busy, modifier = Modifier.enterAnimation(4, distance = 30f))
             Spacer(Modifier.height(12.dp))
             LinkButton("Nie pamiętasz PIN-u?", { forgot = true })
         }

@@ -84,6 +84,18 @@ import app.spectra.wallet.ui.components.glassSurface
 import app.spectra.wallet.ui.home.AssetRowItem
 import app.spectra.wallet.ui.format.Fmt
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import app.spectra.wallet.ui.components.Reveal
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.SizeTransform
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -185,7 +197,13 @@ fun SendScreen(main: MainViewModel, initialAsset: String?, onClose: () -> Unit, 
     val vm: SendViewModel = viewModel(factory = factory { SendViewModel(c, main, initialAsset) })
     val p = vm.prepared
     AuroraBackground(AuroraPreset.DETAIL) {
-        if (p == null) Compose(main, vm, onClose) else Review(main, vm, p, onSubmitted)
+        val d = if (Spectra.reducedMotion) 0 else 300
+        AnimatedContent(p, transitionSpec = {
+            val dir = if (targetState != null) 1 else -1
+            (fadeIn(tween(d)) + slideInHorizontally(tween(d)) { dir * it / 4 }) togetherWith (fadeOut(tween(d / 2)) + slideOutHorizontally(tween(d)) { -dir * it / 4 })
+        }, contentKey = { it != null }, label = "sendStage") { prepared ->
+            if (prepared == null) Compose(main, vm, onClose) else Review(main, vm, prepared, onSubmitted)
+        }
     }
 }
 
@@ -230,21 +248,34 @@ private fun Compose(main: MainViewModel, vm: SendViewModel, onClose: () -> Unit)
                 Spacer(Modifier.width(6.dp))
                 GlassIconButton(SpectraIcons.Scan, "Skanuj kod QR", { scanInfo = true }, size = 36.dp, tint = col.primary, iconSize = 18.dp)
             }
-            when (val ch = vm.addressCheck) {
-                is AddressCheck.Invalid -> Text(when (ch.reason) {
+            val netName = a?.token?.id?.network?.displayName ?: ""
+            // (message, isValid) — animated so the hint fades/updates as the user types.
+            val hint: Pair<String, Boolean>? = when (val ch = vm.addressCheck) {
+                is AddressCheck.Invalid -> when (ch.reason) {
                     AddressError.WRONG_NETWORK -> "Ten adres należy do innej sieci."
                     AddressError.BAD_CHECKSUM -> "Błędna suma kontrolna — adres jest uszkodzony."
                     AddressError.UNSUPPORTED_TYPE -> "Ten typ adresu (np. MWEB) nie jest obsługiwany."
-                    else -> "Nieprawidłowy adres dla sieci ${a?.token?.id?.network?.displayName ?: ""}."
-                }, style = Spectra.type.captionStrong, color = col.negative, modifier = Modifier.padding(bottom = 8.dp))
-                is AddressCheck.Valid -> Text("Adres poprawny dla ${a?.token?.id?.network?.displayName}", style = Spectra.type.captionStrong, color = col.positive, modifier = Modifier.padding(bottom = 8.dp))
-                null -> Unit
+                    else -> "Nieprawidłowy adres dla sieci $netName."
+                } to false
+                is AddressCheck.Valid -> "Adres poprawny dla $netName" to true
+                null -> null
+            }
+            val hd = if (Spectra.reducedMotion) 0 else 200
+            AnimatedContent(hint, transitionSpec = { fadeIn(tween(hd)) togetherWith fadeOut(tween(hd / 2)) }, label = "addrCheck") { h ->
+                if (h != null) Text(h.first, style = Spectra.type.captionStrong, color = if (h.second) col.positive else col.negative, modifier = Modifier.padding(bottom = 8.dp))
             }
         }
         Spacer(Modifier.weight(1f))
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(vm.amountText.ifEmpty { "0" }, style = Spectra.type.amountEntry, color = if (vm.amountText.isEmpty()) col.textDisabled else col.text, maxLines = 1)
+                val ad = if (Spectra.reducedMotion) 0 else 180
+                AnimatedContent(vm.amountText, transitionSpec = {
+                    val up = targetState.length >= initialState.length
+                    ((fadeIn(tween(ad)) + slideInVertically(tween(ad)) { if (up) it / 2 else -it / 2 }) togetherWith
+                        (fadeOut(tween(ad / 2)) + slideOutVertically(tween(ad)) { if (up) -it / 2 else it / 2 })).using(SizeTransform(clip = false))
+                }, label = "amount") { text ->
+                    Text(text.ifEmpty { "0" }, style = Spectra.type.amountEntry, color = if (text.isEmpty()) col.textDisabled else col.text, maxLines = 1)
+                }
                 Spacer(Modifier.width(8.dp))
                 Text(a?.token?.symbol ?: "", style = Spectra.type.headline, color = col.textSecondary, modifier = Modifier.padding(bottom = 8.dp))
             }
@@ -257,7 +288,7 @@ private fun Compose(main: MainViewModel, vm: SendViewModel, onClose: () -> Unit)
             }
             Text("Opłata sieciowa zostanie wyliczona przed potwierdzeniem", style = Spectra.type.caption, color = col.textSecondary, modifier = Modifier.padding(top = 8.dp))
             if (a?.token?.support == TokenSupport.UNSUPPORTED) Text(a.token.supportNote ?: "Wysyłanie tego tokena nie jest obsługiwane.", style = Spectra.type.captionStrong, color = col.negative, textAlign = TextAlign.Center)
-            vm.error?.let { Text(it, style = Spectra.type.captionStrong, color = col.negative, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp)) }
+            Reveal(vm.error != null) { Text(vm.error ?: "", style = Spectra.type.captionStrong, color = col.negative, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp)) }
         }
         Spacer(Modifier.weight(1f))
         NumericKeypad(vm::key, leftKey = KeypadKey.Decimal, glass = false)
@@ -297,13 +328,13 @@ private fun Review(main: MainViewModel, vm: SendViewModel, p: PreparedTransactio
         TopBar("Sprawdź transakcję", onBack = vm::backToCompose)
         Spacer(Modifier.height(20.dp))
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            AssetAvatar(r.token.symbol, n.chain, r.token.id.isNative, 52.dp)
+            AssetAvatar(r.token.symbol, n.chain, r.token.id.isNative, 52.dp, Modifier.enterAnimation(0))
             Spacer(Modifier.height(12.dp))
             Text(Fmt.exact(p.recipientAmount) + " " + r.token.symbol, style = Spectra.type.title, color = col.text, textAlign = TextAlign.Center)
             vm.asset?.unitPrice?.let { Text("≈ " + Fmt.fiat((p.recipientAmount.toDecimal() * it).setScale(2, RoundingMode.HALF_UP), currency), style = Spectra.type.body, color = col.textSecondary) }
         }
         Spacer(Modifier.height(20.dp))
-        GlassCard(Modifier.fillMaxWidth()) {
+        GlassCard(Modifier.fillMaxWidth().enterAnimation(2)) {
             KeyValueRow("Sieć", n.displayName, if (n.isTestnet) col.warning else col.text)
             KeyValueRow("Z konta", (session?.active?.account?.name ?: "") + " · " + Fmt.shortAddress(r.account.primaryAddress))
             Text("Do", style = Spectra.type.body, color = col.textSecondary, modifier = Modifier.padding(top = 8.dp))
@@ -318,11 +349,11 @@ private fun Review(main: MainViewModel, vm: SendViewModel, p: PreparedTransactio
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(FeeLevel.SLOW to "Wolno", FeeLevel.NORMAL to "Normalnie", FeeLevel.FAST to "Szybko").forEach { (l, t) -> Chip(t, vm.feeLevel == l, { vm.changeFee(l) }, enabled = !vm.preparing) }
         }
-        p.warnings.forEach { w -> Spacer(Modifier.height(10.dp)); NoticeCard("Uwaga", warningText(w), Tone.WARNING, SpectraIcons.Alert) }
+        p.warnings.forEachIndexed { i, w -> Spacer(Modifier.height(10.dp)); NoticeCard("Uwaga", warningText(w), Tone.WARNING, SpectraIcons.Alert, Modifier.enterAnimation(3 + i)) }
         if (n.isTestnet) { Spacer(Modifier.height(10.dp)); NoticeCard("Sieć testowa", "Ta transakcja odbywa się w sieci testowej. Tokeny nie mają wartości.", Tone.PRIMARY, SpectraIcons.Info) }
         if (!allowed) { Spacer(Modifier.height(10.dp)); NoticeCard("Wysyłanie w sieci głównej wyłączone",
             "To eksperymentalna wersja bez niezależnego audytu bezpieczeństwa. Podpisywanie transakcji w sieci głównej jest zablokowane w tej kompilacji. Możesz testować w sieciach testowych (Profil → Sieci testowe).", Tone.NEGATIVE, SpectraIcons.ShieldAlert) }
-        vm.error?.let { Spacer(Modifier.height(10.dp)); NoticeCard("Nie udało się", it, Tone.NEGATIVE, SpectraIcons.Alert) }
+        Reveal(vm.error != null) { Spacer(Modifier.height(10.dp)); NoticeCard("Nie udało się", vm.error ?: "", Tone.NEGATIVE, SpectraIcons.Alert) }
         Spacer(Modifier.height(16.dp))
         p.expiresAtMillis?.let {
             Text(if (expired) "Wycena wygasła — odśwież opłatę." else "Ważne jeszcze ${((it - now) / 1000).coerceAtLeast(0)} s", style = Spectra.type.captionStrong,

@@ -61,6 +61,14 @@ import app.spectra.wallet.ui.components.Tone
 import app.spectra.wallet.ui.components.TopBar
 import app.spectra.wallet.ui.components.glassSurface
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import app.spectra.wallet.ui.components.Reveal
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.tween
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
@@ -139,11 +147,15 @@ fun ReceiveScreen(accountId: String, testnet: Boolean, initialChain: Chain?, onB
             Column(Modifier.fillMaxWidth().glassSurface(RoundedCornerShape(28.dp)).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 StatusPill(network.displayName, if (testnet) Tone.WARNING else Tone.POSITIVE)
                 Spacer(Modifier.height(16.dp))
-                val a = address
-                if (a == null) LoadingState("Ustalanie adresu…") else {
-                    QrCode(a, 232.dp)
-                    Spacer(Modifier.height(16.dp))
-                    Text(a, style = Spectra.type.mono.copy(fontSize = Spectra.type.body.fontSize), color = Spectra.colors.text, textAlign = TextAlign.Center)
+                val qd = if (Spectra.reducedMotion) 0 else 320
+                AnimatedContent(address, transitionSpec = { (fadeIn(tween(qd)) + scaleIn(tween(qd), 0.9f)) togetherWith fadeOut(tween(qd / 2)) }, label = "qr") { a ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (a == null) LoadingState("Ustalanie adresu…") else {
+                            QrCode(a, 232.dp)
+                            Spacer(Modifier.height(16.dp))
+                            Text(a, style = Spectra.type.mono.copy(fontSize = Spectra.type.body.fontSize), color = Spectra.colors.text, textAlign = TextAlign.Center)
+                        }
+                    }
                 }
             }
             note?.let { Spacer(Modifier.height(12.dp)); NoticeCard("Adres odbioru", it, Tone.PRIMARY, SpectraIcons.Info) }
@@ -152,7 +164,7 @@ fun ReceiveScreen(accountId: String, testnet: Boolean, initialChain: Chain?, onB
                 "Środki wysłane z innej sieci mogą zostać utracone." + if (testnet) " To sieć testowa — tokeny nie mają wartości." else "", if (testnet) Tone.WARNING else Tone.NEUTRAL, SpectraIcons.Alert)
             Spacer(Modifier.height(16.dp))
             val a = address
-            PrimaryButton(if (copied) "Skopiowano" else "Kopiuj adres", { if (a != null) { copyAddress(context, network.displayName, a); copied = true } }, enabled = a != null, icon = SpectraIcons.Copy)
+            PrimaryButton(if (copied) "Skopiowano ✓" else "Kopiuj adres", { if (a != null) { copyAddress(context, network.displayName, a); copied = true } }, enabled = a != null, icon = SpectraIcons.Copy)
             Spacer(Modifier.height(10.dp))
             SecondaryButton("Udostępnij", { if (a != null) shareAddress(context, network.displayName, a) }, enabled = a != null, icon = SpectraIcons.Share)
         }

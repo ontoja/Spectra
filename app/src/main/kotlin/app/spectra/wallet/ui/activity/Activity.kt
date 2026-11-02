@@ -53,6 +53,15 @@ import app.spectra.wallet.ui.components.StatusPill
 import app.spectra.wallet.ui.components.Tone
 import app.spectra.wallet.ui.format.Fmt
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import app.spectra.wallet.ui.components.pressScale
+import app.spectra.wallet.ui.components.Reveal
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.tween
 import java.math.BigInteger
 
 fun stateLabel(s: TxState) = when (s) {
@@ -80,11 +89,13 @@ fun typeLabel(t: TxType, d: TxDirection) = when (t) {
 @Composable
 fun TxRow(t: TransactionEntity, hidden: Boolean, onClick: () -> Unit) {
     val c = Spectra.colors
+    val interaction = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     val type = runCatching { TxType.valueOf(t.type) }.getOrDefault(TxType.UNKNOWN)
     val dir = runCatching { TxDirection.valueOf(t.direction) }.getOrDefault(TxDirection.SELF)
     val state = TxState.valueOf(t.state)
     val n = Network.fromId(t.networkId)
-    Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).clip(RoundedCornerShape(18.dp)).clickable(role = Role.Button, onClick = onClick).padding(10.dp),
+    Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).pressScale(interaction, 0.98f).clip(RoundedCornerShape(18.dp))
+        .clickable(interaction, androidx.compose.material3.ripple(), role = Role.Button, onClick = onClick).padding(10.dp),
         verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(40.dp).clip(CircleShape).background(if (dir == TxDirection.IN) c.positiveSoft else c.primarySoft), contentAlignment = Alignment.Center) {
             Icon(when (type) { TxType.SWAP -> SpectraIcons.Swap; TxType.STAKE_DELEGATE, TxType.STAKE_DEACTIVATE, TxType.STAKE_WITHDRAW -> SpectraIcons.Earn
@@ -98,7 +109,8 @@ fun TxRow(t: TransactionEntity, hidden: Boolean, onClick: () -> Unit) {
             val amt = if (t.amountUnits != null && t.decimals != null) Fmt.amountWithSymbol(Amount(BigInteger(t.amountUnits), t.decimals), t.symbol ?: "") else ""
             if (amt.isNotEmpty()) Text((if (dir == TxDirection.IN) "+" else if (dir == TxDirection.OUT) "−" else "") + (if (hidden) Fmt.MASK else amt),
                 style = Spectra.type.label, color = if (dir == TxDirection.IN) c.positive else c.text)
-            if (state != TxState.CONFIRMED && state != TxState.FINALIZED) StatusPill(stateLabel(state), stateTone(state), dot = false)
+            if (state != TxState.CONFIRMED && state != TxState.FINALIZED) StatusPill(stateLabel(state), stateTone(state), dot = false,
+                pulsing = state == TxState.PENDING || state == TxState.BROADCASTING || state == TxState.UNKNOWN)
             else if (n.isTestnet) Text("testnet", style = Spectra.type.micro, color = c.warning)
         }
     }
@@ -142,6 +154,7 @@ fun ActivityScreen(main: MainViewModel, onTx: (String) -> Unit) {
             Spacer(Modifier.height(10.dp))
             if (filtered.isEmpty()) EmptyState("Brak transakcji", "Pociągnij ekran główny, aby odświeżyć historię z sieci.", SpectraIcons.History)
         }
-        items(filtered, key = { it.id }) { TxRow(it, s.prefs.hideBalances) { onTx(it.id) } }
+        items(filtered, key = { it.id }) { Box(Modifier.animateItem()) { TxRow(it, s.prefs.hideBalances) { onTx(it.id) } } }
     }
 }
+

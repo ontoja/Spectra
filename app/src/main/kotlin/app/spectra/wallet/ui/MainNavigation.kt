@@ -1,6 +1,8 @@
 package app.spectra.wallet.ui
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -73,7 +75,12 @@ fun MainNavigation(c: AppContainer, main: MainViewModel) {
         composable(Routes.MAIN) {
             var tab by rememberSaveable { mutableStateOf(MainTab.HOME) }
             AuroraBackground(if (tab == MainTab.HOME) AuroraPreset.HOME else AuroraPreset.DETAIL) {
-                when (tab) {
+                val d = if (anim) 260 else 0
+                AnimatedContent(tab, transitionSpec = {
+                    val dir = if (targetState.ordinal > initialState.ordinal) 1 else -1
+                    (fadeIn(tween(d)) + slideInHorizontally(tween(d)) { dir * it / 12 }) togetherWith (fadeOut(tween(d / 2)) + slideOutHorizontally(tween(d)) { -dir * it / 12 })
+                }, label = "tabs") { current ->
+                when (current) {
                     MainTab.HOME -> HomeScreen(main, onAsset = { nav.navigate(Routes.asset(it)) }, onSend = { nav.navigate(Routes.send(null)) },
                         onReceive = { nav.navigate(Routes.receive(null)) }, onSwap = { tab = MainTab.SWAP }, onStake = { tab = MainTab.STAKING },
                         onTx = { nav.navigate(Routes.tx(it)) }, onImport = { nav.navigate(Routes.IMPORT) }, onSettings = { p -> nav.navigate(Routes.settings(p)) })
@@ -81,6 +88,7 @@ fun MainNavigation(c: AppContainer, main: MainViewModel) {
                     MainTab.ACTIVITY -> ActivityScreen(main) { nav.navigate(Routes.tx(it)) }
                     MainTab.STAKING -> StakingScreen(main)
                     MainTab.SETTINGS -> SettingsScreen(main, onOpen = { p, arg -> nav.navigate(Routes.settings(p, arg)) }, onImport = { nav.navigate(Routes.IMPORT) })
+                }
                 }
                 Box(Modifier.fillMaxSize().navigationBarsPadding(), contentAlignment = Alignment.BottomCenter) {
                     SpectraBottomBar(tab, { tab = it })

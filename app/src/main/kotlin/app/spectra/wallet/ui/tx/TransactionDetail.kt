@@ -51,6 +51,14 @@ import app.spectra.wallet.ui.components.TopBar
 import app.spectra.wallet.ui.format.Fmt
 import app.spectra.wallet.ui.receive.copyAddress
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import app.spectra.wallet.ui.components.Reveal
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.tween
 import kotlinx.coroutines.launch
 import java.math.BigInteger
 
@@ -78,7 +86,10 @@ fun TransactionDetailScreen(id: String, onBack: () -> Unit) {
                 if (t.amountUnits != null && t.decimals != null)
                     Text(Fmt.amountWithSymbol(Amount(BigInteger(t.amountUnits), t.decimals), t.symbol ?: ""), style = Spectra.type.title, color = Spectra.colors.text)
                 Spacer(Modifier.height(10.dp))
-                StatusPill(stateLabel(state), stateTone(state))
+                val sd = if (Spectra.reducedMotion) 0 else 260
+                AnimatedContent(state, transitionSpec = { (fadeIn(tween(sd)) + scaleIn(tween(sd), 0.85f)) togetherWith fadeOut(tween(sd / 2)) }, label = "txState") { st ->
+                    StatusPill(stateLabel(st), stateTone(st), pulsing = st == TxState.PENDING || st == TxState.BROADCASTING || st == TxState.UNKNOWN)
+                }
             }
             Spacer(Modifier.height(18.dp))
             when (state) {
@@ -92,7 +103,7 @@ fun TransactionDetailScreen(id: String, onBack: () -> Unit) {
                 else -> Unit
             }
             Spacer(Modifier.height(12.dp))
-            GlassCard(Modifier.fillMaxWidth()) {
+            GlassCard(Modifier.fillMaxWidth().enterAnimation(1)) {
                 KeyValueRow("Sieć", n.displayName, if (n.isTestnet) Spectra.colors.warning else Spectra.colors.text)
                 t.counterparty?.let { KeyValueRow(if (dir == TxDirection.IN) "Od" else "Do", Fmt.shortAddress(it, 6, 6), onClick = { copyAddress(context, "Adres", it) }, trailingIcon = SpectraIcons.Copy) }
                 t.feeUnits?.let { KeyValueRow(if (state == TxState.CONFIRMED || state == TxState.FINALIZED) "Opłata" else "Opłata (maks.)",
@@ -113,7 +124,7 @@ fun TransactionDetailScreen(id: String, onBack: () -> Unit) {
                     if (sw.status == "PARTIAL") Text("Wymiana zakończona częściowo — otrzymano inne aktywo lub mniejszą kwotę. Szczegóły w eksploratorze dostawcy.", style = Spectra.type.caption, color = Spectra.colors.warning)
                 }
             } }
-            error?.let { Spacer(Modifier.height(12.dp)); NoticeCard("Błąd", it, Tone.NEGATIVE, SpectraIcons.Alert) }
+            Reveal(error != null) { Spacer(Modifier.height(12.dp)); NoticeCard("Błąd", error ?: "", Tone.NEGATIVE, SpectraIcons.Alert) }
             Spacer(Modifier.height(16.dp))
             t.txId?.let { txId -> SecondaryButton("Zobacz w eksploratorze", { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(n.explorerTxUrl(txId)))) }, icon = SpectraIcons.External) }
             if (state == TxState.UNKNOWN || (state == TxState.DROPPED && t.rawSigned != null)) {

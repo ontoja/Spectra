@@ -1,7 +1,7 @@
 package app.spectra.wallet.ui.theme
 
 import android.provider.Settings
-import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -24,7 +24,7 @@ object Spectra {
 
 /** Standard transition spec that collapses to an instant change when the user disabled animations. */
 @Composable
-fun <T> spectraTween(durationMs: Int = Motion.STANDARD): AnimationSpec<T> =
+fun <T> spectraTween(durationMs: Int = Motion.STANDARD): FiniteAnimationSpec<T> =
     if (Spectra.reducedMotion) snap() else tween(durationMs)
 
 @Composable

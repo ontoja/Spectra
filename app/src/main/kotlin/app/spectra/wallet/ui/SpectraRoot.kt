@@ -1,5 +1,11 @@
 package app.spectra.wallet.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -59,24 +65,38 @@ fun SpectraRoot(c: AppContainer, prefs: UserPreferences) {
         val needsOnboarding = lock == LockState.NO_WALLET || (lock == LockState.UNLOCKED && accounts?.isEmpty() == true)
         LaunchedEffect(needsOnboarding) { if (needsOnboarding) onboarding = true }
         val accs = accounts
-        when {
-            accs == null -> AuroraBackground(AuroraPreset.PIN) { }
-            lock == LockState.KEYS_LOST -> KeysLostScreen(c)
-            onboarding || needsOnboarding -> {
-                val vm: OnboardingViewModel = viewModel(key = "onboarding", factory = factory { OnboardingViewModel(c, addingWallet = false) })
-                OnboardingFlow(vm, onFinished = { onboarding = false })
-            }
-            lock == LockState.LOCKED -> LockScreen(c, accs.firstOrNull { it.account.id == prefs.activeAccountId }?.account?.name ?: accs.firstOrNull()?.account?.name ?: "portfel")
-            else -> {
-                val context = LocalContext.current
-                val main: MainViewModel = viewModel(factory = factory { MainViewModel(c, context.applicationContext) })
-                MainNavigation(c, main)
+        val screen = when {
+            accs == null -> RootScreen.BLANK
+            lock == LockState.KEYS_LOST -> RootScreen.KEYS_LOST
+            onboarding || needsOnboarding -> RootScreen.ONBOARDING
+            lock == LockState.LOCKED -> RootScreen.LOCK
+            else -> RootScreen.MAIN
+        }
+        val d = if (Spectra.reducedMotion) 0 else 420
+        AnimatedContent(screen, transitionSpec = {
+            (fadeIn(tween(d)) + scaleIn(tween(d), initialScale = if (targetState == RootScreen.MAIN) 0.96f else 1.02f)) togetherWith fadeOut(tween(d / 2))
+        }, label = "root") { target ->
+            when (target) {
+                RootScreen.BLANK -> AuroraBackground(AuroraPreset.PIN) { }
+                RootScreen.KEYS_LOST -> KeysLostScreen(c)
+                RootScreen.ONBOARDING -> {
+                    val vm: OnboardingViewModel = viewModel(key = "onboarding", factory = factory { OnboardingViewModel(c, addingWallet = false) })
+                    OnboardingFlow(vm, onFinished = { onboarding = false })
+                }
+                RootScreen.LOCK -> LockScreen(c, accs?.firstOrNull { it.account.id == prefs.activeAccountId }?.account?.name ?: accs?.firstOrNull()?.account?.name ?: "portfel")
+                RootScreen.MAIN -> {
+                    val context = LocalContext.current
+                    val main: MainViewModel = viewModel(factory = factory { MainViewModel(c, context.applicationContext) })
+                    MainNavigation(c, main)
+                }
             }
         }
         AuthorizationHost(c)
         RootWarning(c, prefs)
     }
 }
+
+private enum class RootScreen { BLANK, KEYS_LOST, ONBOARDING, LOCK, MAIN }
 
 @Composable
 private fun RootWarning(c: AppContainer, prefs: UserPreferences) {

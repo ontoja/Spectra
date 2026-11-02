@@ -19,10 +19,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -41,15 +44,21 @@ enum class PinState { IDLE, ERROR, OK }
 @Composable
 fun PinDots(filled: Int, state: PinState, length: Int = 6) {
     val c = Spectra.colors
+    // Shake once each time the state flips to ERROR.
+    var errors by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    androidx.compose.runtime.LaunchedEffect(state) { if (state == PinState.ERROR) errors++ }
     Row(
-        Modifier.glassSurface(RoundedCornerShape(26.dp)).padding(horizontal = 20.dp, vertical = 14.dp)
+        Modifier.shake(errors).glassSurface(RoundedCornerShape(26.dp)).padding(horizontal = 20.dp, vertical = 14.dp)
             .semantics { contentDescription = "Wpisano $filled z $length cyfr"; liveRegion = LiveRegionMode.Polite },
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         repeat(length) { i ->
             val target = when { state == PinState.ERROR -> c.negativeStrong; state == PinState.OK -> c.positive; i < filled -> c.primary; else -> Color.Transparent }
             val color by animateColorAsState(target, spectraTween(Motion.FAST), label = "dot")
-            Box(Modifier.size(14.dp).clip(CircleShape).background(color)
+            val filledNow = i < filled || state != PinState.IDLE
+            val scale by androidx.compose.animation.core.animateFloatAsState(if (filledNow) 1f else 0.82f,
+                if (Spectra.reducedMotion) androidx.compose.animation.core.snap() else androidx.compose.animation.core.spring(dampingRatio = 0.35f, stiffness = 700f), label = "dotScale")
+            Box(Modifier.size(14.dp).graphicsLayer { scaleX = scale; scaleY = scale }.clip(CircleShape).background(color)
                 .then(if (target == Color.Transparent) Modifier.border(2.dp, c.text.copy(alpha = .22f), CircleShape) else Modifier))
         }
     }
@@ -98,9 +107,13 @@ private fun Key(key: KeypadKey, glass: Boolean, size: Dp, onPress: (KeypadKey) -
     val isDigit = key is KeypadKey.Digit
     val base = if (glass) Modifier.size(size) else Modifier.width(96.dp).height(56.dp)
     if (key == KeypadKey.Empty) { Box(base); return }
+    val interaction = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val highlight by animateColorAsState(if (pressed) c.primary.copy(alpha = 0.12f) else Color.Transparent, spectraTween(Motion.FAST), label = "keyHi")
     Box(
-        base.then(if (glass && isDigit) Modifier.glassSurface(CircleShape) else Modifier).clip(if (glass) CircleShape else RoundedCornerShape(16.dp))
-            .clickable(role = Role.Button) { onPress(key) }.semantics { contentDescription = label },
+        base.pressScale(interaction, 0.9f).then(if (glass && isDigit) Modifier.glassSurface(CircleShape) else Modifier).clip(if (glass) CircleShape else RoundedCornerShape(16.dp))
+            .background(highlight)
+            .clickable(interaction, androidx.compose.material3.ripple(), role = Role.Button) { onPress(key) }.semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
         when (key) {

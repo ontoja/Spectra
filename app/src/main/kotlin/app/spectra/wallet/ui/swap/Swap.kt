@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -78,6 +79,18 @@ import app.spectra.wallet.ui.components.StatusPill
 import app.spectra.wallet.ui.components.Tone
 import app.spectra.wallet.ui.format.Fmt
 import app.spectra.wallet.ui.theme.Spectra
+import app.spectra.wallet.ui.components.enterAnimation
+import app.spectra.wallet.ui.components.Reveal
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.SizeTransform
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.math.BigInteger
@@ -206,11 +219,16 @@ fun SwapScreen(main: MainViewModel) {
             vm.available()?.let { Text("Dostępne ${Fmt.amountWithSymbol(it, vm.fromToken?.symbol ?: "")}", style = Spectra.type.caption, color = col.textSecondary) }
         }
         Box(Modifier.fillMaxWidth().padding(vertical = 6.dp), contentAlignment = Alignment.Center) {
-            GlassIconButton(SpectraIcons.Swap, "Zamień kierunek", vm::flip, Modifier.size(44.dp), tint = col.primary)
+            var turns by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+            val rot by androidx.compose.animation.core.animateFloatAsState(turns * 180f,
+                if (Spectra.reducedMotion) androidx.compose.animation.core.snap() else androidx.compose.animation.core.spring(dampingRatio = 0.6f, stiffness = 260f), label = "flip")
+            GlassIconButton(SpectraIcons.Swap, "Zamień kierunek", { turns++; vm.flip() }, Modifier.size(44.dp).graphicsLayer { rotationZ = rot + 90f }, tint = col.primary)
         }
         SwapSide("Otrzymujesz", vm.toChain, vm.toToken, { vm.setTo(it) }, { pickFor = false }) {
             val q = vm.quote
-            Text(q?.let { Fmt.amount(it.estimatedOut) } ?: "—", style = Spectra.type.headline, color = if (q == null) col.textDisabled else col.text)
+            AnimatedContent(q?.let { Fmt.amount(it.estimatedOut) } ?: "—", transitionSpec = {
+                (fadeIn(tween(220)) + slideInVertically(tween(220)) { it / 2 }) togetherWith (fadeOut(tween(120)) + slideOutVertically(tween(160)) { -it / 2 })
+            }, label = "estOut") { txt -> Text(txt, style = Spectra.type.headline, color = if (txt == "—") col.textDisabled else col.text) }
             if (q != null) Text("Szacunek, nie gwarancja. Minimum: ${Fmt.amountWithSymbol(q.minimumOut, vm.toToken?.symbol ?: "")}", style = Spectra.type.caption, color = col.textSecondary)
         }
         Spacer(Modifier.height(12.dp))
@@ -222,9 +240,12 @@ fun SwapScreen(main: MainViewModel) {
             }
             Text("Dostawca: ${(route as RouteSupport.Supported).provider.displayName}" + if (vm.fromChain != vm.toChain) " · wymiana międzysieciowa" else "", style = Spectra.type.caption, color = col.textSecondary, modifier = Modifier.padding(top = 6.dp))
         }
-        vm.error?.let { Spacer(Modifier.height(10.dp)); NoticeCard("Nie udało się", it, Tone.NEGATIVE, SpectraIcons.Alert) }
-        vm.info?.let { Spacer(Modifier.height(10.dp)); NoticeCard("Informacja", it, Tone.PRIMARY, SpectraIcons.Info) }
-        val q = vm.quote
+        Reveal(vm.error != null) { Spacer(Modifier.height(10.dp)); NoticeCard("Nie udało się", vm.error ?: "", Tone.NEGATIVE, SpectraIcons.Alert) }
+        Reveal(vm.info != null) { Spacer(Modifier.height(10.dp)); NoticeCard("Informacja", vm.info ?: "", Tone.PRIMARY, SpectraIcons.Info) }
+        val qd = if (Spectra.reducedMotion) 0 else 280
+        AnimatedContent(vm.quote, transitionSpec = {
+            (fadeIn(tween(qd)) + slideInVertically(tween(qd)) { it / 8 }) togetherWith fadeOut(tween(qd / 2)) using SizeTransform(clip = false)
+        }, contentKey = { it != null }, label = "quote") { q -> Column {
         if (q != null) {
             val left = ((q.expiresAtMillis - now) / 1000).coerceAtLeast(0)
             Spacer(Modifier.height(12.dp))
@@ -257,6 +278,7 @@ fun SwapScreen(main: MainViewModel) {
             Spacer(Modifier.height(14.dp))
             PrimaryButton("Pobierz wycenę", vm::getQuote, enabled = route is RouteSupport.Supported && vm.toToken != null && vm.amountText.isNotBlank(), loading = vm.busy)
         }
+        } }
         if (swaps.isNotEmpty()) {
             Spacer(Modifier.height(20.dp))
             SectionLabel("Twoje wymiany")
@@ -264,12 +286,12 @@ fun SwapScreen(main: MainViewModel) {
                 swaps.take(10).forEachIndexed { i, s ->
                     if (i > 0) Hairline()
                     val st = runCatching { SwapStatus.valueOf(s.status) }.getOrDefault(SwapStatus.UNKNOWN)
-                    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).enterAnimation(i), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text("${Fmt.amountWithSymbol(Amount(BigInteger(s.amountUnits), s.fromDecimals), s.fromSymbol)} → ${s.toSymbol}", style = Spectra.type.label, color = col.text)
                             Text((s.message ?: s.provider).take(80), style = Spectra.type.caption, color = col.textSecondary)
                         }
-                        StatusPill(swapStatusLabel(st), when (st) { SwapStatus.COMPLETED -> Tone.POSITIVE; SwapStatus.FAILED, SwapStatus.EXPIRED -> Tone.NEGATIVE; SwapStatus.PARTIAL, SwapStatus.REFUNDED, SwapStatus.UNKNOWN -> Tone.WARNING; else -> Tone.PRIMARY }, dot = false)
+                        StatusPill(swapStatusLabel(st), pulsing = !st.isTerminal, dot = false, tone = when (st) { SwapStatus.COMPLETED -> Tone.POSITIVE; SwapStatus.FAILED, SwapStatus.EXPIRED -> Tone.NEGATIVE; SwapStatus.PARTIAL, SwapStatus.REFUNDED, SwapStatus.UNKNOWN -> Tone.WARNING; else -> Tone.PRIMARY })
                     }
                 }
                 Text("Spectra nigdy nie powtarza automatycznie wymiany o niepewnym statusie.", style = Spectra.type.caption, color = col.textSecondary, modifier = Modifier.padding(top = 6.dp))

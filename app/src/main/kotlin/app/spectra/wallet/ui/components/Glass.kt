@@ -20,6 +20,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.spectra.wallet.ui.theme.Elevation
@@ -55,9 +58,20 @@ fun auroraBlobs(preset: AuroraPreset): List<AuroraBlob> {
 fun AuroraBackground(preset: AuroraPreset = AuroraPreset.HOME, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     val c = Spectra.colors
     val blobs = auroraBlobs(preset)
+    val reduced = Spectra.reducedMotion
+    val drift = if (reduced) null else androidx.compose.animation.core.rememberInfiniteTransition(label = "aurora").animateFloat(
+        0f, 1f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(16_000, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+            androidx.compose.animation.core.RepeatMode.Reverse), label = "drift")
     Box(modifier.fillMaxSize().background(c.background)) {
         Box(
             Modifier.fillMaxSize()
+                // Slow drift of the whole (cached) aurora layer: only the layer transform changes per frame.
+                .graphicsLayer {
+                    val d = drift?.value ?: 0f
+                    translationX = (d - 0.5f) * 28.dp.toPx()
+                    translationY = (0.5f - d) * 20.dp.toPx()
+                    scaleX = 1.04f + d * 0.04f; scaleY = scaleX
+                }
                 .then(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Modifier.blur(40.dp) else Modifier)
                 .drawBehind {
                     blobs.forEach { b ->
