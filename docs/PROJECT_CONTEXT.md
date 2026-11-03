@@ -89,6 +89,13 @@
    - filtry konto/sieć/status/aktywo w arkuszu („Pokaż wyniki (N)”, „Wyczyść filtry”);
    - pusty stan z przyciskiem „Odśwież” (`main.refresh()`), osobny pusty stan dla filtrów.
    Screenshoty `15_history`, `15b_history_empty`; test `FormatTest.dayHeaders`. Wysłano `spectra-0.1.6-debug.apk`.
+11. „Przygotuj 3 designy stakowania” (screenshot obecnego ekranu: wiersz „Aktywacja / odblokowanie” łamie się
+   i wchodzi pod dolny pasek — do naprawy przy przebudowie). Artefakt Design „Spectra — Staking, 3 warianty”:
+   A „Pozycje na pierwszym planie” (karta: w stakingu + ≈ zł, nagrody 3 epok, inflacja z ⓘ, pasek epoki; lista
+   kont stake ze statusem; Wypłać / Stakuj SOL), B „Kreator w 3 krokach” (Kwota → Walidator → Przegląd; lista
+   walidatorów jako radio: adres, prowizja, aktywny stake, „nie głosuje — odradzane”; sort po prowizji/stake'u),
+   C „Cykl życia stake'u” (kwota + walidator w jednej karcie, oś 4 kroków: delegacja → aktywacja na granicy epoki
+   → aktywny → dezaktywacja/wypłata). Bez nazw walidatorów i bez szacunków zysku. **Czekam na wybór.**
 
 ## 3. Pierwotna specyfikacja (streszczenie wymagań użytkownika)
 
