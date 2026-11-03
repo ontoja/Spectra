@@ -42,6 +42,15 @@ import app.spectra.wallet.ui.staking.StakingScreen
 import app.spectra.wallet.ui.settings.SettingsScreen
 import app.spectra.wallet.ui.swap.SwapScreen
 import app.spectra.wallet.ui.receive.ReceiveScreen
+import app.spectra.wallet.ui.swap.SwapViewModel
+import app.spectra.wallet.ui.swap.AssetPickerContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.unit.dp
 
 /**
  * Renders key screens on the JVM (no emulator) to PNGs under app/build/screenshots for visual comparison with the
@@ -162,6 +171,17 @@ class ScreenshotTest {
         val main = MainViewModel(app.container, app, autoRefresh = false)
         val eth = TokenInfo.native(Network(Chain.ETHEREUM, NetworkEnv.MAINNET))
         shot("14b_swap_crosschain") { AuroraBackground(AuroraPreset.DETAIL) { SwapScreen(main) { amountText = "1,25"; select(false, Chain.ETHEREUM, eth) } } }
+    }
+
+    @Test fun swapPickerPopularTokens() {
+        seed()
+        val main = MainViewModel(app.container, app, autoRefresh = false)
+        val vm = SwapViewModel(app.container, main)
+        vm.select(false, Chain.ETHEREUM, TokenInfo.native(Network(Chain.ETHEREUM, NetworkEnv.MAINNET)))
+        shot("14d_swap_picker_eth") { AuroraBackground(AuroraPreset.DETAIL) {
+            Column(Modifier.statusBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp)) {
+                AssetPickerContent(vm, false, emptyList()) {}
+            } } }
     }
 
     @Test fun swapStablecoinLogo() {

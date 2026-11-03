@@ -78,6 +78,7 @@ import app.spectra.core.model.Chain
 import app.spectra.core.model.Network
 import app.spectra.core.model.NetworkEnv
 import app.spectra.core.model.TokenInfo
+import app.spectra.core.swap.PopularTokens
 import app.spectra.core.swap.RouteSupport
 import app.spectra.core.swap.SwapQuote
 import app.spectra.core.swap.SwapRequest
@@ -139,7 +140,7 @@ class SwapViewModel(private val c: AppContainer, private val main: MainViewModel
     init { reset() }
 
     fun reset() {
-        fromToken = TokenInfo.native(network(fromChain)); toToken = if (fromChain == toChain) null else TokenInfo.native(network(toChain))
+        fromToken = TokenInfo.native(network(fromChain)); toToken = if (fromChain == toChain) PopularTokens.forNetwork(network(toChain)).firstOrNull() else TokenInfo.native(network(toChain))
         quote = null; reviewed = null; error = null
     }
 
@@ -398,22 +399,27 @@ fun SwapScreen(main: MainViewModel, setup: (SwapViewModel.() -> Unit)? = null) {
 
 /** Network + asset picker. Each side picks its own network, which is what makes cross-chain swaps possible. */
 @Composable
-private fun AssetPickerSheet(vm: SwapViewModel, from: Boolean, tokens: List<Pair<app.spectra.wallet.data.TokenEntity, TokenInfo>>, onDismiss: () -> Unit) {
+private fun AssetPickerSheet(vm: SwapViewModel, from: Boolean, tokens: List<Pair<app.spectra.wallet.data.TokenEntity, TokenInfo>>, onDismiss: () -> Unit) =
+    SpectraSheet(onDismiss) { AssetPickerContent(vm, from, tokens, onDismiss) }
+
+@Composable
+internal fun AssetPickerContent(vm: SwapViewModel, from: Boolean, tokens: List<Pair<app.spectra.wallet.data.TokenEntity, TokenInfo>>, onDismiss: () -> Unit) {
     val c = LocalContainer.current
     val col = Spectra.colors
     var chain by remember { mutableStateOf(if (from) vm.fromChain else vm.toChain) }
     var custom by remember { mutableStateOf("") }
+    var query by remember { mutableStateOf("") }
     var customErr by remember { mutableStateOf<String?>(null) }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val current = if (from) vm.fromToken else vm.toToken
-    SpectraSheet(onDismiss) {
+    Column {
         Text(if (from) "Co wysyłasz?" else "Co chcesz otrzymać?", style = Spectra.type.headline, color = col.text, modifier = Modifier.semantics { heading() })
         Spacer(Modifier.height(4.dp))
         Text("Wybierz sieć i aktywo. Różne sieci po obu stronach = wymiana międzysieciowa.", style = Spectra.type.caption, color = col.textSecondary)
         Spacer(Modifier.height(14.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Chain.entries.forEach { ch ->
-                Chip(ch.symbol, ch == chain, { chain = ch; custom = ""; customErr = null }, Modifier.weight(1f), leading = { ChainLogo(ch, 22.dp) })
+                Chip(ch.symbol, ch == chain, { chain = ch; custom = ""; customErr = null; query = "" }, Modifier.weight(1f), leading = { ChainLogo(ch, 22.dp) })
             }
         }
         val n = vm.network(chain)
@@ -424,24 +430,27 @@ private fun AssetPickerSheet(vm: SwapViewModel, from: Boolean, tokens: List<Pair
             NoticeCard("Brak trasy", routeReasonPl(routeHere.reason), Tone.WARNING, SpectraIcons.Info)
         }
         Spacer(Modifier.height(10.dp))
-        val list = (listOf(TokenInfo.native(n)) + tokens.filter { it.first.networkId == n.id && !it.first.hidden }.map { it.second }).distinctBy { it.id }
-        list.forEachIndexed { i, t ->
-            val selected = current?.id == t.id
-            val bal = vm.balanceOf(t)
-            Row(Modifier.fillMaxWidth().heightIn(min = 60.dp).enterAnimation(i).clip(RoundedCornerShape(18.dp))
-                .background(if (selected) col.primarySoft else androidx.compose.ui.graphics.Color.Transparent)
-                .clickable(role = Role.Button) { vm.select(from, chain, t); onDismiss() }
-                .semantics { stateDescription = if (selected) "Wybrano" else "" }.padding(horizontal = 10.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically) {
-                AssetAvatar(t, 40.dp); Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(t.symbol, style = Spectra.type.bodyStrong, color = col.text)
-                    Text(if (t.id.isNative) n.displayName else "${t.name} · ${n.displayName}", style = Spectra.type.caption, color = col.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                if (bal != null && !bal.isZero) Text(Fmt.amount(bal), style = Spectra.type.label, color = col.text)
-                if (selected) { Spacer(Modifier.width(8.dp)); Icon(SpectraIcons.Check, null, Modifier.size(18.dp), tint = col.primary) }
-            }
+        val owned = (listOf(TokenInfo.native(n)) + tokens.filter { it.first.networkId == n.id && !it.first.hidden }.map { it.second }).distinctBy { it.id }
+        val popular = PopularTokens.forNetwork(n).filter { p -> owned.none { it.id == p.id } }
+        val q = query.trim()
+        fun TokenInfo.matches() = q.isEmpty() || symbol.contains(q, ignoreCase = true) || name.contains(q, ignoreCase = true) ||
+            (id.address?.equals(q, ignoreCase = true) == true)
+        if (owned.size + popular.size > 6) {
+            GlassTextField(query, { query = it }, "Szukaj: symbol lub nazwa")
+            Spacer(Modifier.height(8.dp))
         }
+        val ownedShown = owned.filter { it.matches() }
+        val popularShown = popular.filter { it.matches() }
+        if (ownedShown.isNotEmpty()) {
+            SectionLabel("Twoje aktywa", Modifier.padding(top = 6.dp))
+            ownedShown.forEachIndexed { i, t -> PickerRow(t, n, current?.id == t.id, vm.balanceOf(t), Modifier.enterAnimation(i)) { vm.select(from, chain, t); onDismiss() } }
+        }
+        if (popularShown.isNotEmpty()) {
+            SectionLabel("Popularne", Modifier.padding(top = 10.dp))
+            popularShown.forEachIndexed { i, t -> PickerRow(t, n, current?.id == t.id, null, Modifier.enterAnimation(ownedShown.size + i)) { vm.select(from, chain, t); onDismiss() } }
+            Text("Lista wbudowana w aplikację; adresy kontraktów sprawdzone w sieci i u dostawców tras.", style = Spectra.type.caption, color = col.textSecondary, modifier = Modifier.padding(start = 10.dp, top = 4.dp))
+        }
+        if (ownedShown.isEmpty() && popularShown.isEmpty()) Text("Brak wyników. Możesz dodać token po adresie poniżej.", style = Spectra.type.caption, color = col.textSecondary, modifier = Modifier.padding(vertical = 12.dp))
         if (chain != Chain.LITECOIN) {
             Spacer(Modifier.height(12.dp))
             GlassTextField(custom, { custom = it.trim(); customErr = null }, if (chain == Chain.SOLANA) "Adres mint tokena" else "Adres kontraktu ERC-20", sensitive = true)
@@ -451,6 +460,24 @@ private fun AssetPickerSheet(vm: SwapViewModel, from: Boolean, tokens: List<Pair
                 scope.launch { runCatching { c.portfolio.addCustomToken(n, custom) }.onSuccess { t -> vm.select(from, chain, t); onDismiss() }.onFailure { customErr = it.humanMessage() } }
             }, enabled = custom.length > 30)
         }
+    }
+}
+
+@Composable
+private fun PickerRow(t: TokenInfo, n: Network, selected: Boolean, balance: Amount?, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val col = Spectra.colors
+    Row(modifier.fillMaxWidth().heightIn(min = 60.dp).clip(RoundedCornerShape(18.dp))
+        .background(if (selected) col.primarySoft else androidx.compose.ui.graphics.Color.Transparent)
+        .clickable(role = Role.Button, onClick = onClick)
+        .semantics { stateDescription = if (selected) "Wybrano" else "" }.padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        AssetAvatar(t, 40.dp); Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(t.symbol, style = Spectra.type.bodyStrong, color = col.text)
+            Text(if (t.id.isNative) n.displayName else "${t.name} · ${n.displayName}", style = Spectra.type.caption, color = col.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        if (balance != null && !balance.isZero) Text(Fmt.amount(balance), style = Spectra.type.label, color = col.text)
+        if (selected) { Spacer(Modifier.width(8.dp)); Icon(SpectraIcons.Check, null, Modifier.size(18.dp), tint = col.primary) }
     }
 }
 

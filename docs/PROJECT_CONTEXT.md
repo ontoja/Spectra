@@ -57,6 +57,13 @@
    - `CryptoLogos.kt`: logo USDC/USDT rozpoznawane **wyłącznie po adresie** mintu/kontraktu w mainnecie (nie po
      symbolu — spamowy „USDC” nie dostaje logo); `AssetAvatar(token: TokenInfo)` używany w Home/Send/Swap.
    - Screenshoty: `14_swap`, `14b_swap_crosschain`, `14c_swap_stablecoins`. Wysłano `spectra-0.1.3-debug.apk`.
+8. „Dodaj powszechne tokeny typu USDC w ETH” → `wallet-core/.../swap/PopularTokens.kt`: wbudowana (nie pobierana)
+   lista mainnet — Solana: USDC, USDT, JUP, mSOL, JitoSOL, RAY, BONK, WIF; Ethereum: USDC, USDT, DAI, WETH, WBTC,
+   LINK, UNI, AAVE, PEPE. Każdy adres sprawdzony 2026-11-03 w 3 źródłach: RPC (ERC-20 `symbol()`/`decimals()`,
+   konto mintu SPL), lista zweryfikowanych Jupitera, rejestr tokenów LI.FI. Test `PopularTokensTest` (EIP-55,
+   32-bajtowe minty, brak duplikatów, puste na testnecie/LTC). Arkusz wyboru: wyszukiwarka, sekcje
+   „Twoje aktywa” / „Popularne”; domyślna para SOL → USDC. Screenshot `14d_swap_picker_eth`.
+   Wysłano `spectra-0.1.4-debug.apk`.
 
 ## 3. Pierwotna specyfikacja (streszczenie wymagań użytkownika)
 
@@ -305,7 +312,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 
 ## 9. Stan weryfikacji
 
-- **71 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
+- **75 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
   bip_utils, EIP-1559/ERC-20 vs eth-account, Solana tx/ATA/stake-seed vs solders, BIP-143 oficjalny wektor,
   RFC6979, Bech32/Base58/RLP/EIP-55, RpcManager, adaptery na MockWebServer, modele) + app 18 (VaultCrypto,
   Lockout, Format, 11 screenshotów w tym 3 testy dekodowania QR).
@@ -330,6 +337,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 - `spectra-0.1.0-debug.apk` — pierwsza wersja (bez animacji).
 - `spectra-0.1.1-debug.apk` — z animacjami.
 - `spectra-0.1.2-debug.apk` — logo kryptowalut, QR z logo, nowy ekran Odbierz (lokalnie w katalogu repo, ignorowany przez git).
+- `spectra-0.1.4-debug.apk` — popularne tokeny (USDC/USDT/DAI/WETH/WBTC…, JUP/mSOL/BONK…) w Wymianie.
 - `spectra-0.1.3-debug.apk` — nowy ekran Wymiana (wariant A, wybór sieci w arkuszu aktywów, cross-chain), logo USDC/USDT.
 Instalacja: Android 11+, zgoda na nieznane źródła; podpis debug; mainnet tylko odczyt, testnety pełne
 (Profil → Sieci testowe → przełącznik w arkuszu kont / ustawieniach).
