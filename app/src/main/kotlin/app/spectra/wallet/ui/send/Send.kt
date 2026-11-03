@@ -223,7 +223,7 @@ private fun Compose(main: MainViewModel, vm: SendViewModel, onClose: () -> Unit)
         GlassCard(Modifier.fillMaxWidth(), padding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)) {
             Row(Modifier.fillMaxWidth().heightIn(min = 60.dp).clickable(role = Role.Button) { picker = true }, verticalAlignment = Alignment.CenterVertically) {
                 if (a != null) {
-                    AssetAvatar(a.token.symbol, a.token.id.network.chain, a.token.id.isNative, 38.dp)
+                    AssetAvatar(a.token, 38.dp)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(a.token.name + if (!a.token.id.isNative) " · ${a.token.id.network.displayName}" else "", style = Spectra.type.bodyStrong, color = col.text)
@@ -328,7 +328,7 @@ private fun Review(main: MainViewModel, vm: SendViewModel, p: PreparedTransactio
         TopBar("Sprawdź transakcję", onBack = vm::backToCompose)
         Spacer(Modifier.height(20.dp))
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            AssetAvatar(r.token.symbol, n.chain, r.token.id.isNative, 52.dp, Modifier.enterAnimation(0))
+            AssetAvatar(r.token, 52.dp, Modifier.enterAnimation(0))
             Spacer(Modifier.height(12.dp))
             Text(Fmt.exact(p.recipientAmount) + " " + r.token.symbol, style = Spectra.type.title, color = col.text, textAlign = TextAlign.Center)
             vm.asset?.unitPrice?.let { Text("≈ " + Fmt.fiat((p.recipientAmount.toDecimal() * it).setScale(2, RoundingMode.HALF_UP), currency), style = Spectra.type.body, color = col.textSecondary) }

@@ -7,6 +7,8 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.core.app.ApplicationProvider
 import app.spectra.core.crypto.Bip39
+import app.spectra.core.model.AssetId
+import app.spectra.core.model.AssetKind
 import app.spectra.core.model.Chain
 import app.spectra.core.model.DerivationScheme
 import app.spectra.core.model.Network
@@ -153,6 +155,23 @@ class ScreenshotTest {
         seed()
         val main = MainViewModel(app.container, app, autoRefresh = false)
         shot("14_swap") { AuroraBackground(AuroraPreset.DETAIL) { SwapScreen(main) } }
+    }
+
+    @Test fun swapCrossChain() {
+        seed()
+        val main = MainViewModel(app.container, app, autoRefresh = false)
+        val eth = TokenInfo.native(Network(Chain.ETHEREUM, NetworkEnv.MAINNET))
+        shot("14b_swap_crosschain") { AuroraBackground(AuroraPreset.DETAIL) { SwapScreen(main) { amountText = "1,25"; select(false, Chain.ETHEREUM, eth) } } }
+    }
+
+    @Test fun swapStablecoinLogo() {
+        seed()
+        val main = MainViewModel(app.container, app, autoRefresh = false)
+        val sol = Network(Chain.SOLANA, NetworkEnv.MAINNET)
+        val usdc = TokenInfo(AssetId(sol, AssetKind.SPL_TOKEN, "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"), "USDC", "USD Coin", 6)
+        val eth = Network(Chain.ETHEREUM, NetworkEnv.MAINNET)
+        val usdt = TokenInfo(AssetId(eth, AssetKind.ERC20, "0xdAC17F958D2ee523a2206206994597C13D831ec7"), "USDT", "Tether USD", 6)
+        shot("14c_swap_stablecoins") { AuroraBackground(AuroraPreset.DETAIL) { SwapScreen(main) { select(true, Chain.ETHEREUM, usdt); select(false, Chain.SOLANA, usdc); amountText = "250" } } }
     }
 
     private fun receiveScans(chain: Chain) {

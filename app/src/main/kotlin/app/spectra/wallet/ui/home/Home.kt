@@ -111,7 +111,7 @@ fun AssetRowItem(r: AssetRow, currency: String, hidden: Boolean, modifier: Modif
     val interaction = remember { MutableInteractionSource() }
     Row(modifier.fillMaxWidth().heightIn(min = 60.dp).pressScale(interaction, 0.98f).clip(RoundedCornerShape(Radii.tile)).clickable(interaction, ripple(), role = Role.Button, onClick = onClick).padding(10.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        AssetAvatar(r.token.symbol, r.token.id.network.chain, r.token.id.isNative)
+        AssetAvatar(r.token)
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(r.token.name, style = Spectra.type.bodyStrong, color = c.text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))

@@ -44,6 +44,19 @@
      podmienia na nowy nieużywany.
    - Test `ScreenshotTest.receive*QrWithLogoScans` renderuje ekran i dekoduje QR ZXingiem — 3/3 zgodne z adresem.
    - Wysłano `spectra-0.1.2-debug.apk`.
+7. Screenshot ekranu Wymiana (ze starego APK) → „zrób 3 mockupy z prawdziwymi ikonkami krypto”. Przygotowałem
+   płótno Design (artefakt claude.ai: A „Szklane karty”, B „Trasa między sieciami”, C „Kwota i klawiatura”).
+   Użytkownik wybrał **A + cross-chain**. Zrobione w `ui/swap/Swap.kt`:
+   - usunięte rzędy chipów sieci; każda strona ma pigułkę tokena (logo + symbol), a sieć wybiera się w arkuszu
+     „Co wysyłasz? / Co chcesz otrzymać?” (zakładki SOL/ETH/LTC z logo + lista aktywów z saldami) → różne sieci po
+     obu stronach = wymiana międzysieciowa (LI.FI), pokazywana paskiem „Wymiana międzysieciowa · A → B · most LI.FI”;
+   - duża kwota, „≈ X zł” tylko gdy znana cena (nigdy zmyślona), etykieta sieci pod kwotą, okrągły przycisk zamiany
+     nachodzący na obie karty, linia kursu „1 X ≈ Y Z” + „przez Jupiter/LI.FI · N s”, karta szczegółów
+     (poślizg w `SegmentedTabs`, minimum, wpływ na cenę, czas, trasa, opłaty), pigułka Mainnet/Testnet;
+   - `SwapViewModel.select(from, chain, token)` (wybór tego samego aktywa co po drugiej stronie zamienia strony);
+   - `CryptoLogos.kt`: logo USDC/USDT rozpoznawane **wyłącznie po adresie** mintu/kontraktu w mainnecie (nie po
+     symbolu — spamowy „USDC” nie dostaje logo); `AssetAvatar(token: TokenInfo)` używany w Home/Send/Swap.
+   - Screenshoty: `14_swap`, `14b_swap_crosschain`, `14c_swap_stablecoins`. Wysłano `spectra-0.1.3-debug.apk`.
 
 ## 3. Pierwotna specyfikacja (streszczenie wymagań użytkownika)
 
@@ -292,7 +305,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 
 ## 9. Stan weryfikacji
 
-- **69 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
+- **71 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
   bip_utils, EIP-1559/ERC-20 vs eth-account, Solana tx/ATA/stake-seed vs solders, BIP-143 oficjalny wektor,
   RFC6979, Bech32/Base58/RLP/EIP-55, RpcManager, adaptery na MockWebServer, modele) + app 18 (VaultCrypto,
   Lockout, Format, 11 screenshotów w tym 3 testy dekodowania QR).
@@ -317,5 +330,6 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 - `spectra-0.1.0-debug.apk` — pierwsza wersja (bez animacji).
 - `spectra-0.1.1-debug.apk` — z animacjami.
 - `spectra-0.1.2-debug.apk` — logo kryptowalut, QR z logo, nowy ekran Odbierz (lokalnie w katalogu repo, ignorowany przez git).
+- `spectra-0.1.3-debug.apk` — nowy ekran Wymiana (wariant A, wybór sieci w arkuszu aktywów, cross-chain), logo USDC/USDT.
 Instalacja: Android 11+, zgoda na nieznane źródła; podpis debug; mainnet tylko odczyt, testnety pełne
 (Profil → Sieci testowe → przełącznik w arkuszu kont / ustawieniach).

@@ -130,7 +130,7 @@ fun AssetDetailScreen(main: MainViewModel, assetId: AssetId, onBack: () -> Unit,
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 12.dp)) {
                 TopBar(null, onBack = onBack, titleContent = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        AssetAvatar(token.symbol, assetId.network.chain, assetId.isNative, 26.dp)
+                        AssetAvatar(token.symbol, assetId.network.chain, assetId.isNative, 26.dp, address = assetId.address, testnet = assetId.network.isTestnet)
                         Spacer(Modifier.width(8.dp))
                         Text(token.name, style = Spectra.type.topBar, color = c.text)
                     }
