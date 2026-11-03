@@ -64,6 +64,19 @@
    32-bajtowe minty, brak duplikatów, puste na testnecie/LTC). Arkusz wyboru: wyszukiwarka, sekcje
    „Twoje aktywa” / „Popularne”; domyślna para SOL → USDC. Screenshot `14d_swap_picker_eth`.
    Wysłano `spectra-0.1.4-debug.apk`.
+9. Screenshot pustej Historii → „dodaj logo też dla reszty tokenów i zrób mockup Historii, 3 ekrany”.
+   - Logo: 13 rastrowych logo (144 px WebP, `res/drawable-nodpi/token_{eth|sol}_<sym>.webp`) dla DAI, WETH, WBTC,
+     LINK, UNI, AAVE, PEPE, JUP, mSOL, JitoSOL, RAY, BONK, WIF — pobrane jednorazowo z rejestrów używanych przez
+     portfele (Trust Wallet assets, LI.FI/DeBank, Jupiter, CoinGecko), obejrzane ręcznie (WETH z DeBank odrzucony →
+     Trust Wallet). Aplikacja nigdy nie pobiera logo w runtime. Przypisanie wyłącznie po adresie z `PopularTokens`
+     (`CryptoLogos.kt: bundledLogos`), test `TokenLogoTest` (pokrycie listy, brak dopasowania po symbolu/testnecie).
+     Uwaga: logo to znaki towarowe projektów — standardowa praktyka portfeli, ale przed publikacją w sklepie
+     warto to przejrzeć.
+   - Mockupy Historii (artefakt Design „Spectra — Historia, 3 warianty”): A „Dni w kartach” (zakładki typu,
+     grupy dni w szklanych kartach, plakietki kierunku na logo), B „Podsumowanie i szczegóły” (miesiąc, suma
+     otrzymano/wysłano, chipy sieci, rozwinięty wpis z hashem i eksploratorem), C „Oś czasu” (wyszukiwarka,
+     aktywne filtry jako chipy do usunięcia, pionowa oś z logo). **Czekam na wybór użytkownika.**
+   Wysłano `spectra-0.1.5-debug.apk`.
 
 ## 3. Pierwotna specyfikacja (streszczenie wymagań użytkownika)
 
@@ -312,7 +325,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 
 ## 9. Stan weryfikacji
 
-- **75 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
+- **77 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
   bip_utils, EIP-1559/ERC-20 vs eth-account, Solana tx/ATA/stake-seed vs solders, BIP-143 oficjalny wektor,
   RFC6979, Bech32/Base58/RLP/EIP-55, RpcManager, adaptery na MockWebServer, modele) + app 18 (VaultCrypto,
   Lockout, Format, 11 screenshotów w tym 3 testy dekodowania QR).
@@ -337,6 +350,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 - `spectra-0.1.0-debug.apk` — pierwsza wersja (bez animacji).
 - `spectra-0.1.1-debug.apk` — z animacjami.
 - `spectra-0.1.2-debug.apk` — logo kryptowalut, QR z logo, nowy ekran Odbierz (lokalnie w katalogu repo, ignorowany przez git).
+- `spectra-0.1.5-debug.apk` — logo wszystkich popularnych tokenów.
 - `spectra-0.1.4-debug.apk` — popularne tokeny (USDC/USDT/DAI/WETH/WBTC…, JUP/mSOL/BONK…) w Wymianie.
 - `spectra-0.1.3-debug.apk` — nowy ekran Wymiana (wariant A, wybór sieci w arkuszu aktywów, cross-chain), logo USDC/USDT.
 Instalacja: Android 11+, zgoda na nieznane źródła; podpis debug; mainnet tylko odczyt, testnety pełne

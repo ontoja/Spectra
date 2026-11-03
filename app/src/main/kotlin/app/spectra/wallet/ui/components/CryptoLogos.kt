@@ -1,6 +1,11 @@
 package app.spectra.wallet.ui.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import app.spectra.core.swap.PopularTokens
+import app.spectra.wallet.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -86,11 +91,38 @@ private val knownTokens: Map<String, KnownToken> = mapOf(
     "ethereum:mainnet:0xdac17f958d2ee523a2206206994597c13d831ec7" to KnownToken.USDT,
 )
 
+private fun logoKey(chain: Chain, address: String) =
+    "${chain.name.lowercase()}:mainnet:${if (chain == Chain.ETHEREUM) address.lowercase() else address}"
+
 private fun knownToken(chain: Chain, testnet: Boolean, address: String?): KnownToken? {
     if (testnet || address == null) return null
-    val a = if (chain == Chain.ETHEREUM) address.lowercase() else address
-    return knownTokens["${chain.name.lowercase()}:mainnet:$a"]
+    return knownTokens[logoKey(chain, address)]
 }
+
+/**
+ * Bundled raster logos (res/drawable-nodpi, 144 px WebP) for the curated [PopularTokens] list. Keys come from that
+ * list's verified addresses, so a logo can only ever attach to the exact mainnet contract / mint — never a symbol.
+ * Images were sourced once from the token registries wallets use (Trust Wallet assets, LI.FI, Jupiter); the app
+ * never downloads logos at runtime.
+ */
+private val bundledLogos: Map<String, Int> by lazy {
+    val res = mapOf(
+        "ethereum:DAI" to R.drawable.token_eth_dai, "ethereum:WETH" to R.drawable.token_eth_weth,
+        "ethereum:WBTC" to R.drawable.token_eth_wbtc, "ethereum:LINK" to R.drawable.token_eth_link,
+        "ethereum:UNI" to R.drawable.token_eth_uni, "ethereum:AAVE" to R.drawable.token_eth_aave,
+        "ethereum:PEPE" to R.drawable.token_eth_pepe,
+        "solana:JUP" to R.drawable.token_sol_jup, "solana:mSOL" to R.drawable.token_sol_msol,
+        "solana:JitoSOL" to R.drawable.token_sol_jitosol, "solana:RAY" to R.drawable.token_sol_ray,
+        "solana:BONK" to R.drawable.token_sol_bonk, "solana:WIF" to R.drawable.token_sol_wif,
+    )
+    (PopularTokens.ethereum + PopularTokens.solana).mapNotNull { t ->
+        val chain = t.id.network.chain
+        res["${chain.name.lowercase()}:${t.symbol}"]?.let { logoKey(chain, t.id.address!!) to it }
+    }.toMap()
+}
+
+private fun bundledLogo(chain: Chain, testnet: Boolean, address: String?): Int? =
+    if (testnet || address == null) null else bundledLogos[logoKey(chain, address)]
 
 @Composable
 private fun KnownTokenLogo(token: KnownToken, size: Dp, modifier: Modifier = Modifier) {
@@ -149,8 +181,10 @@ fun AssetAvatar(symbol: String, chain: Chain?, isNative: Boolean, size: Dp = 42.
     if (isNative && chain != null) { ChainLogo(chain, size, modifier); return }
     val letter = symbol.firstOrNull { it.isLetterOrDigit() }?.uppercase() ?: "?"
     val known = chain?.let { knownToken(it, testnet, address) }
+    val raster = if (known == null) chain?.let { bundledLogo(it, testnet, address) } else null
     Box(modifier.size(size)) {
         if (known != null) KnownTokenLogo(known, size)
+        else if (raster != null) Image(painterResource(raster), symbol, Modifier.size(size).clip(CircleShape).background(Color.White), contentScale = ContentScale.Crop)
         else Box(Modifier.size(size).clip(CircleShape).background(Brush.linearGradient(AssetGradients.token)), contentAlignment = Alignment.Center) {
             Text(letter, style = Spectra.type.bodyStrong.copy(fontSize = Spectra.type.bodyStrong.fontSize * (size.value / 42f)), color = Color.White)
         }
@@ -166,3 +200,9 @@ fun AssetAvatar(symbol: String, chain: Chain?, isNative: Boolean, size: Dp = 42.
 @Composable
 fun AssetAvatar(token: app.spectra.core.model.TokenInfo, size: Dp = 42.dp, modifier: Modifier = Modifier) =
     AssetAvatar(token.symbol, token.id.network.chain, token.id.isNative, size, modifier, token.id.address, token.id.network.isTestnet)
+
+/** True when a bundled (vector or raster) logo exists for this exact mainnet asset. */
+internal fun hasBundledLogo(token: app.spectra.core.model.TokenInfo): Boolean {
+    val n = token.id.network
+    return knownToken(n.chain, n.isTestnet, token.id.address) != null || bundledLogo(n.chain, n.isTestnet, token.id.address) != null
+}
