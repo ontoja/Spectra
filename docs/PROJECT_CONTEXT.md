@@ -95,7 +95,19 @@
    kont stake ze statusem; Wypłać / Stakuj SOL), B „Kreator w 3 krokach” (Kwota → Walidator → Przegląd; lista
    walidatorów jako radio: adres, prowizja, aktywny stake, „nie głosuje — odradzane”; sort po prowizji/stake'u),
    C „Cykl życia stake'u” (kwota + walidator w jednej karcie, oś 4 kroków: delegacja → aktywacja na granicy epoki
-   → aktywny → dezaktywacja/wypłata). Bez nazw walidatorów i bez szacunków zysku. **Czekam na wybór.**
+   → aktywny → dezaktywacja/wypłata). Bez nazw walidatorów i bez szacunków zysku.
+12. Zapytany o opinię poleciłem **A jako ekran główny + C jako ekran stakowania + lista walidatorów z B w arkuszu**;
+   użytkownik: „zrób jak uważasz”. Zrobione w `ui/staking/Staking.kt` (VM bez zmian logiki, + `flowOpen`,
+   `previewWith` dla testów; `StakingScreen(main, autoLoad, setup)`):
+   - przegląd: przełącznik sieci (pigułka z logo → arkusz Solana / Ethereum-niedostępny), karta „W stakingu”
+     (+ ≈ waluta), kafelki „Nagrody (3 epoki)” i „Inflacja sieci ⓘ” (rozwija wyjaśnienie), pasek epoki
+     z „~X d Y h do końca” (szacunek z liczby slotów × 0,4 s), lista pozycji (awatar walidatora z 2 znaków klucza,
+     prowizja, stan), Wypłać / Stakuj SOL; stuknięcie pozycji → arkusz szczegółów z Dezaktywuj / Wypłać;
+   - ekran „Stakuj SOL”: kwota + 25/50/75/Max + walidator w jednej karcie, „Co się stanie” (4 kroki, rezerwa rent,
+     odliczanie epoki), przycisk „Stakuj X SOL” → istniejący arkusz potwierdzenia + autoryzacja; BackHandler;
+   - arkusz walidatorów: wyszukiwarka, sort „Najniższa prowizja”/„Największy stake”, radio, „Nie głosuje — odradzane”.
+   Naprawiony błąd z telefonu (wiersz „Aktywacja / odblokowanie” wchodzący pod pasek — wiersz usunięty).
+   Screenshoty `12_staking`, `12b_staking_flow`, `12c_staking_empty`. Wysłano `spectra-0.1.7-debug.apk`.
 
 ## 3. Pierwotna specyfikacja (streszczenie wymagań użytkownika)
 
@@ -344,7 +356,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 
 ## 9. Stan weryfikacji
 
-- **80 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
+- **82 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
   bip_utils, EIP-1559/ERC-20 vs eth-account, Solana tx/ATA/stake-seed vs solders, BIP-143 oficjalny wektor,
   RFC6979, Bech32/Base58/RLP/EIP-55, RpcManager, adaptery na MockWebServer, modele) + app 18 (VaultCrypto,
   Lockout, Format, 11 screenshotów w tym 3 testy dekodowania QR).
@@ -369,6 +381,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 - `spectra-0.1.0-debug.apk` — pierwsza wersja (bez animacji).
 - `spectra-0.1.1-debug.apk` — z animacjami.
 - `spectra-0.1.2-debug.apk` — logo kryptowalut, QR z logo, nowy ekran Odbierz (lokalnie w katalogu repo, ignorowany przez git).
+- `spectra-0.1.7-debug.apk` — nowy Staking (A + C + lista walidatorów z B).
 - `spectra-0.1.6-debug.apk` — nowy ekran Historia (wariant A).
 - `spectra-0.1.5-debug.apk` — logo wszystkich popularnych tokenów.
 - `spectra-0.1.4-debug.apk` — popularne tokeny (USDC/USDT/DAI/WETH/WBTC…, JUP/mSOL/BONK…) w Wymianie.

@@ -54,6 +54,12 @@ import androidx.compose.ui.unit.dp
 import app.spectra.wallet.ui.activity.ActivityScreen
 import app.spectra.wallet.data.TransactionEntity
 import app.spectra.wallet.data.SwapEntity
+import app.spectra.wallet.domain.StakingOverview
+import app.spectra.core.staking.Validator
+import app.spectra.core.staking.StakePosition
+import app.spectra.core.staking.StakeState
+import app.spectra.core.staking.EpochStatus
+import app.spectra.core.staking.StakeReward
 
 /**
  * Renders key screens on the JVM (no emulator) to PNGs under app/build/screenshots for visual comparison with the
@@ -151,10 +157,40 @@ class ScreenshotTest {
             SendScreen(main, null, {}, {}) } }
     }
 
+    private fun stakingPreview(): Pair<StakingOverview, List<Validator>> {
+        val v1 = Validator("CcaHc2L1JNSTPkVR2YfHsH5hPXszbPhRZcaRcp7doTN1", "n1", 7, 3_100_000L * 1_000_000_000, false, 1L)
+        val v2 = Validator("9QxC7dCVnHFRgsTrQDsG1xV1a8yvC6dKaWj1sNqZHm2a", "n2", 5, 1_240_000L * 1_000_000_000, false, 1L)
+        val v3 = Validator("DkW3pQx1vE7HgJkLmNoPqRsTuVwXyZaBcDeFgHi7zRe", "n3", 8, 860_000L * 1_000_000_000, false, 1L)
+        val v4 = Validator("4hTa9eXbCdEfGhJkLmNoPqRsTuVwXyZaBcDeFgVq1k", "n4", 0, 12_000L * 1_000_000_000, true, null)
+        val owner = "owner"
+        val positions = listOf(
+            StakePosition("StakeA1111111111111111111111111111111111111", 1_502_282_880, 1_500_000_000, v1.votePubkey, 1060, null, owner, owner, 2_282_880, StakeState.ACTIVE),
+            StakePosition("StakeB2222222222222222222222222222222222222", 502_282_880, 500_000_000, v2.votePubkey, 1076, null, owner, owner, 2_282_880, StakeState.ACTIVATING),
+        )
+        val o = StakingOverview(positions, EpochStatus(1076, 125_280, 432_000), 3.57,
+            listOf(StakeReward(positions[0].stakeAccount, 1075, 2_100_000, 0)), 2_481_500_000)
+        return o to listOf(v1, v2, v3, v4)
+    }
+
     @Test fun staking() {
         seed()
         val main = MainViewModel(app.container, app, autoRefresh = false)
-        shot("12_staking") { AuroraBackground(AuroraPreset.DETAIL) { StakingScreen(main) } }
+        val (o, v) = stakingPreview()
+        shot("12_staking") { AuroraBackground(AuroraPreset.DETAIL) { StakingScreen(main, autoLoad = false) { previewWith(o, v, 2_282_880) } } }
+    }
+
+    @Test fun stakingFlow() {
+        seed()
+        val main = MainViewModel(app.container, app, autoRefresh = false)
+        val (o, v) = stakingPreview()
+        shot("12b_staking_flow") { AuroraBackground(AuroraPreset.DETAIL) { StakingScreen(main, autoLoad = false) { previewWith(o, v, 2_282_880); amountText = "2"; flowOpen = true } } }
+    }
+
+    @Test fun stakingEmpty() {
+        seed()
+        val main = MainViewModel(app.container, app, autoRefresh = false)
+        val (o, v) = stakingPreview()
+        shot("12c_staking_empty") { AuroraBackground(AuroraPreset.DETAIL) { StakingScreen(main, autoLoad = false) { previewWith(o.copy(positions = emptyList(), rewards = emptyList()), v, 2_282_880) } } }
     }
 
     @Test fun settings() {
