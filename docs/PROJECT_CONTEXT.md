@@ -33,6 +33,17 @@
 4. **„Nie ma żadnych animacji, dodaj animacje wszędzie gdzie powinny być”** → dodałem system animacji w całej
    aplikacji (sekcja 8), wysłałem `spectra-0.1.1-debug.apk`. Użytkownik może prosić o dostrojenie konkretnych animacji.
 5. **„Spisz dokładnie wszystkie informacje… do pliku md”** → ten plik.
+6. Użytkownik przetestował na **prawdziwym telefonie** (screenshot ekranu Odbierz) i poprosił: „dodaj ikonki krypto,
+   na środku kodu QR ikonkę krypto w zależności od sieci i ogólnie popraw to UI”. Zrobione:
+   - `ui/components/CryptoLogos.kt`: wektorowe logo SOL/ETH/LTC (`ChainLogo`), `AssetAvatar` = logo sieci dla monet
+     natywnych, dla tokenów litera + mała plakietka sieci; logo także w chipach (Wymiana, Historia, Tokeny).
+   - `ui/receive/Receive.kt` przepisany: przełącznik sieci z logo na całą szerokość, karta z logo/nazwą konta/
+     Mainnet-Testnet, QR z zaokrąglonymi modułami i logo w środku (korekcja błędów H, dziura ~22%), adres z
+     pogrubionymi pierwszymi/ostatnimi 6 znakami, dotknięcie QR/adresu kopiuje, lżejsze ostrzeżenie, przyciski
+     przypięte nad paskiem nawigacji (Kopiuj + ikona Udostępnij), LTC pokazuje adres od razu i dopiero potem
+     podmienia na nowy nieużywany.
+   - Test `ScreenshotTest.receive*QrWithLogoScans` renderuje ekran i dekoduje QR ZXingiem — 3/3 zgodne z adresem.
+   - Wysłano `spectra-0.1.2-debug.apk`.
 
 ## 3. Pierwotna specyfikacja (streszczenie wymagań użytkownika)
 
@@ -281,10 +292,10 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 
 ## 9. Stan weryfikacji
 
-- **66 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
+- **69 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
   bip_utils, EIP-1559/ERC-20 vs eth-account, Solana tx/ATA/stake-seed vs solders, BIP-143 oficjalny wektor,
   RFC6979, Bech32/Base58/RLP/EIP-55, RpcManager, adaptery na MockWebServer, modele) + app 18 (VaultCrypto,
-  Lockout, Format, 8 screenshotów).
+  Lockout, Format, 11 screenshotów w tym 3 testy dekodowania QR).
 - `assembleDebug`, `assembleRelease` (R8), `lintDebug` — OK.
 - **Niezweryfikowane**: brak testów na prawdziwym telefonie (Keystore/StrongBox, BiometricPrompt, śmierć procesu,
   rotacja), brak migracji Room (tylko schemat v1), brak przebiegów na żywych testnetach (brak środków testowych),
@@ -304,6 +315,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 ## 11. Wydane pliki dla użytkownika
 
 - `spectra-0.1.0-debug.apk` — pierwsza wersja (bez animacji).
-- `spectra-0.1.1-debug.apk` — z animacjami (w katalogu głównym repo lokalnie, ignorowany przez git).
+- `spectra-0.1.1-debug.apk` — z animacjami.
+- `spectra-0.1.2-debug.apk` — logo kryptowalut, QR z logo, nowy ekran Odbierz (lokalnie w katalogu repo, ignorowany przez git).
 Instalacja: Android 11+, zgoda na nieznane źródła; podpis debug; mainnet tylko odczyt, testnety pełne
 (Profil → Sieci testowe → przełącznik w arkuszu kont / ustawieniach).

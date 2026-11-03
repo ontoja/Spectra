@@ -648,6 +648,6 @@ private fun ReadyScreen(vm: OnboardingViewModel, onDone: () -> Unit) {
         Spacer(Modifier.weight(1f).heightIn(min = 24.dp))
         PrimaryButton("Przejdź do portfela", onDone)
     }
-    qrFor?.let { (chain, addr) -> app.spectra.wallet.ui.receive.AddressQrSheet(chain.displayName, addr) { qrFor = null } }
+    qrFor?.let { (chain, addr) -> app.spectra.wallet.ui.receive.AddressQrSheet(chain.displayName, addr, chain) { qrFor = null } }
 }
 

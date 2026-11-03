@@ -39,6 +39,7 @@ import app.spectra.wallet.ui.send.SendScreen
 import app.spectra.wallet.ui.staking.StakingScreen
 import app.spectra.wallet.ui.settings.SettingsScreen
 import app.spectra.wallet.ui.swap.SwapScreen
+import app.spectra.wallet.ui.receive.ReceiveScreen
 
 /**
  * Renders key screens on the JVM (no emulator) to PNGs under app/build/screenshots for visual comparison with the
@@ -52,7 +53,7 @@ class ScreenshotTest {
     private val app get() = ApplicationProvider.getApplicationContext<SpectraApp>()
     private val out = File("build/screenshots").apply { mkdirs() }
 
-    private fun shot(name: String, content: @Composable () -> Unit) {
+    private fun shot(name: String, content: @Composable () -> Unit): Bitmap {
         rule.mainClock.autoAdvance = false
         rule.setContent { SpectraTheme { CompositionLocalProvider(LocalContainer provides app.container) { content() } } }
         repeat(15) {
@@ -64,6 +65,16 @@ class ScreenshotTest {
         val bmp = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
         view.draw(android.graphics.Canvas(bmp))
         File(out, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        return bmp
+    }
+
+    /** Decodes any QR code visible in [bmp] with ZXing (independent of how we drew it). */
+    private fun decodeQr(bmp: Bitmap): String {
+        val px = IntArray(bmp.width * bmp.height)
+        bmp.getPixels(px, 0, bmp.width, 0, 0, bmp.width, bmp.height)
+        val src = com.google.zxing.RGBLuminanceSource(bmp.width, bmp.height, px)
+        val hints = mapOf(com.google.zxing.DecodeHintType.TRY_HARDER to true, com.google.zxing.DecodeHintType.POSSIBLE_FORMATS to listOf(com.google.zxing.BarcodeFormat.QR_CODE))
+        return com.google.zxing.MultiFormatReader().decode(com.google.zxing.BinaryBitmap(com.google.zxing.common.HybridBinarizer(src)), hints).text
     }
 
     @Test fun welcome() {
@@ -143,4 +154,15 @@ class ScreenshotTest {
         val main = MainViewModel(app.container, app, autoRefresh = false)
         shot("14_swap") { AuroraBackground(AuroraPreset.DETAIL) { SwapScreen(main) } }
     }
+
+    private fun receiveScans(chain: Chain) {
+        val acc = seed()
+        val expected = runBlocking { app.container.wallets.account(acc)!!.view(Network(chain, NetworkEnv.MAINNET))!!.primaryAddress }
+        val bmp = shot("15_receive_${chain.name.lowercase()}") { ReceiveScreen(acc, false, chain) {} }
+        org.junit.Assert.assertEquals(expected, decodeQr(bmp))
+    }
+
+    @Test fun receiveSolanaQrWithLogoScans() = receiveScans(Chain.SOLANA)
+    @Test fun receiveEthereumQrWithLogoScans() = receiveScans(Chain.ETHEREUM)
+    @Test fun receiveLitecoinQrWithLogoScans() = receiveScans(Chain.LITECOIN)
 }

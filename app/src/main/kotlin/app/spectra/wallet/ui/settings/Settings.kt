@@ -502,7 +502,7 @@ private fun TokensPage(main: MainViewModel) {
     SectionLabel("Dodaj token ręcznie")
     Card {
         Row(Modifier.padding(6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf(Chain.SOLANA, Chain.ETHEREUM).forEach { ch -> Chip(Network(ch, env).displayName, ch == chain, { chain = ch }) }
+            listOf(Chain.SOLANA, Chain.ETHEREUM).forEach { ch -> Chip(Network(ch, env).displayName, ch == chain, { chain = ch }, leading = { app.spectra.wallet.ui.components.ChainLogo(ch, 20.dp) }) }
         }
         GlassTextField(address, { address = it.trim() }, if (chain == Chain.SOLANA) "Adres mint (SPL / Token-2022)" else "Adres kontraktu ERC-20", sensitive = true)
         Spacer(Modifier.height(8.dp))

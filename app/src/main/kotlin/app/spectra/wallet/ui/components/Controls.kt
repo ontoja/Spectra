@@ -155,21 +155,6 @@ fun StepProgress(step: Int, total: Int, onBack: (() -> Unit)?) {
 }
 
 @Composable
-fun AssetAvatar(symbol: String, chain: Chain?, isNative: Boolean, size: Dp = 42.dp, modifier: Modifier = Modifier) {
-    val colors = when {
-        !isNative -> AssetGradients.token
-        chain == Chain.SOLANA -> AssetGradients.solana
-        chain == Chain.ETHEREUM -> AssetGradients.ethereum
-        chain == Chain.LITECOIN -> AssetGradients.litecoin
-        else -> AssetGradients.token
-    }
-    val letter = when { isNative && chain == Chain.LITECOIN -> "Ł"; else -> symbol.firstOrNull { it.isLetterOrDigit() }?.uppercase() ?: "?" }
-    Box(modifier.size(size).clip(CircleShape).background(Brush.linearGradient(colors)), contentAlignment = Alignment.Center) {
-        Text(letter, style = Spectra.type.bodyStrong.copy(fontSize = Spectra.type.bodyStrong.fontSize * (size.value / 42f)), color = Color.White)
-    }
-}
-
-@Composable
 fun SegmentedTabs(items: List<String>, selected: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier, fill: Boolean = false) {
     val c = Spectra.colors
     val density = androidx.compose.ui.platform.LocalDensity.current
@@ -201,13 +186,16 @@ fun SegmentedTabs(items: List<String>, selected: Int, onSelect: (Int) -> Unit, m
 }
 
 @Composable
-fun Chip(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun Chip(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, leading: (@Composable () -> Unit)? = null) {
     val c = Spectra.colors
     val bg by animateColorAsState(if (selected) c.inverse else c.chip, spectraTween(Motion.FAST), label = "chip")
     val interaction = remember { MutableInteractionSource() }
     Box(modifier.height(44.dp).pressScale(interaction, 0.93f).clip(RoundedCornerShape(22.dp)).background(bg).clickable(interaction, ripple(), enabled = enabled, role = Role.Button, onClick = onClick)
         .semantics { stateDescription = if (selected) "Wybrano" else "" }.padding(horizontal = 14.dp), contentAlignment = Alignment.Center) {
-        Text(text, style = Spectra.type.label, color = if (!enabled) c.textDisabled else if (selected) c.onInverse else c.text, maxLines = 1)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            leading?.let { it(); Spacer(Modifier.width(8.dp)) }
+            Text(text, style = Spectra.type.label, color = if (!enabled) c.textDisabled else if (selected) c.onInverse else c.text, maxLines = 1)
+        }
     }
 }
 

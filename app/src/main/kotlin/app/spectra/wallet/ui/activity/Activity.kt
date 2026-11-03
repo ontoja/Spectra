@@ -142,7 +142,7 @@ fun ActivityScreen(main: MainViewModel, onTx: (String) -> Unit) {
             Spacer(Modifier.height(14.dp))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Chip(if (allAccounts) "Wszystkie konta" else (s.active?.account?.name ?: "Konto"), allAccounts, { allAccounts = !allAccounts })
-                Chain.entries.forEach { ch -> Chip(ch.displayName, chain == ch.name, { chain = if (chain == ch.name) null else ch.name }) }
+                Chain.entries.forEach { ch -> Chip(ch.displayName, chain == ch.name, { chain = if (chain == ch.name) null else ch.name }, leading = { app.spectra.wallet.ui.components.ChainLogo(ch, 20.dp) }) }
             }
             Spacer(Modifier.height(8.dp))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

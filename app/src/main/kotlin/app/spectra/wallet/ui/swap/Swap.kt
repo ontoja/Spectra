@@ -335,7 +335,7 @@ private fun SwapSide(label: String, chain: Chain, token: TokenInfo?, onChain: (C
     GlassCard(Modifier.fillMaxWidth()) {
         Text(label, style = Spectra.type.captionStrong, color = col.textSecondary)
         Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { Chain.entries.forEach { c -> Chip(c.symbol, c == chain, { onChain(c) }) } }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { Chain.entries.forEach { c -> Chip(c.symbol, c == chain, { onChain(c) }, leading = { app.spectra.wallet.ui.components.ChainLogo(c, 20.dp) }) } }
         Spacer(Modifier.height(10.dp))
         Row(Modifier.clip(RoundedCornerShape(20.dp)).clickable(role = Role.Button, onClick = onPick).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             if (token != null) { AssetAvatar(token.symbol, chain, token.id.isNative, 30.dp); Spacer(Modifier.width(8.dp)); Text(token.symbol, style = Spectra.type.bodyStrong, color = col.text) }
