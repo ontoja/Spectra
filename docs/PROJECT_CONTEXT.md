@@ -75,8 +75,20 @@
    - Mockupy Historii (artefakt Design „Spectra — Historia, 3 warianty”): A „Dni w kartach” (zakładki typu,
      grupy dni w szklanych kartach, plakietki kierunku na logo), B „Podsumowanie i szczegóły” (miesiąc, suma
      otrzymano/wysłano, chipy sieci, rozwinięty wpis z hashem i eksploratorem), C „Oś czasu” (wyszukiwarka,
-     aktywne filtry jako chipy do usunięcia, pionowa oś z logo). **Czekam na wybór użytkownika.**
+     aktywne filtry jako chipy do usunięcia, pionowa oś z logo).
    Wysłano `spectra-0.1.5-debug.apk`.
+10. Użytkownik wybrał **Historia A**. Zrobione w `ui/activity/Activity.kt`:
+   - nagłówek + przycisk filtrów z licznikiem aktywnych; `SegmentedTabs` Wszystko/Przelewy/Wymiany/Staking
+     (przy `fill = true` mniejszy padding, żeby etykiety się mieściły);
+   - grupy dni (`Fmt.dayHeader`: Dzisiaj/Wczoraj/„28 października”[+rok]) w szklanych kartach; suma dnia w walucie
+     tylko z rozliczonych przelewów i tylko gdy każdy ma znaną cenę (staking i wymiany nie liczą się jako wydatek);
+   - `TxRow`: logo aktywa + plakietka kierunku (zielona ↙ otrzymano, ciemna ↗ wysłano, fioletowa staking),
+     wymiana = dwa nachodzące logo (bez plakietek sieci, `AssetAvatar(showNetworkBadge = false)`), tytuł
+     „Otrzymano SOL”/„Wymiana SOL → USDC”, „od/do adres · HH:mm”, kwota ze znakiem (staking bez znaku), pod nią
+     wartość w walucie / „≈ X USDC” dla wymian / status w toku;
+   - filtry konto/sieć/status/aktywo w arkuszu („Pokaż wyniki (N)”, „Wyczyść filtry”);
+   - pusty stan z przyciskiem „Odśwież” (`main.refresh()`), osobny pusty stan dla filtrów.
+   Screenshoty `15_history`, `15b_history_empty`; test `FormatTest.dayHeaders`. Wysłano `spectra-0.1.6-debug.apk`.
 
 ## 3. Pierwotna specyfikacja (streszczenie wymagań użytkownika)
 
@@ -325,7 +337,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 
 ## 9. Stan weryfikacji
 
-- **77 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
+- **80 testów, 0 porażek**: wallet-core 48 (BIP-39 Trezor, BIP-32 v1, SLIP-10 v1, CKDpub, 58 adresów vs
   bip_utils, EIP-1559/ERC-20 vs eth-account, Solana tx/ATA/stake-seed vs solders, BIP-143 oficjalny wektor,
   RFC6979, Bech32/Base58/RLP/EIP-55, RpcManager, adaptery na MockWebServer, modele) + app 18 (VaultCrypto,
   Lockout, Format, 11 screenshotów w tym 3 testy dekodowania QR).
@@ -350,6 +362,7 @@ Wszystko wyłącza się, gdy systemowa skala animacji = 0 (`Spectra.reducedMotio
 - `spectra-0.1.0-debug.apk` — pierwsza wersja (bez animacji).
 - `spectra-0.1.1-debug.apk` — z animacjami.
 - `spectra-0.1.2-debug.apk` — logo kryptowalut, QR z logo, nowy ekran Odbierz (lokalnie w katalogu repo, ignorowany przez git).
+- `spectra-0.1.6-debug.apk` — nowy ekran Historia (wariant A).
 - `spectra-0.1.5-debug.apk` — logo wszystkich popularnych tokenów.
 - `spectra-0.1.4-debug.apk` — popularne tokeny (USDC/USDT/DAI/WETH/WBTC…, JUP/mSOL/BONK…) w Wymianie.
 - `spectra-0.1.3-debug.apk` — nowy ekran Wymiana (wariant A, wybór sieci w arkuszu aktywów, cross-chain), logo USDC/USDT.

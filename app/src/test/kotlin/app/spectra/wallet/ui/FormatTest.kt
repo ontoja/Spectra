@@ -22,4 +22,14 @@ class FormatTest {
         assertEquals("7xKp…3fQa", Fmt.shortAddress("7xKpAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3fQa"))
         assertEquals("−1,45%", Fmt.percent(-1.45))
     }
+
+    @org.junit.Test fun dayHeaders() {
+        val zone = java.time.ZoneId.of("Europe/Warsaw")
+        val now = java.time.ZonedDateTime.of(2026, 11, 3, 15, 0, 0, 0, zone).toInstant().toEpochMilli()
+        fun at(y: Int, m: Int, d: Int, h: Int = 12) = java.time.ZonedDateTime.of(y, m, d, h, 0, 0, 0, zone).toEpochSecond()
+        org.junit.Assert.assertEquals("Dzisiaj", app.spectra.wallet.ui.format.Fmt.dayHeader(at(2026, 11, 3, 0), now, zone))
+        org.junit.Assert.assertEquals("Wczoraj", app.spectra.wallet.ui.format.Fmt.dayHeader(at(2026, 11, 2, 23), now, zone))
+        org.junit.Assert.assertEquals("28 października", app.spectra.wallet.ui.format.Fmt.dayHeader(at(2026, 10, 28), now, zone))
+        org.junit.Assert.assertEquals("5 grudnia 2025", app.spectra.wallet.ui.format.Fmt.dayHeader(at(2025, 12, 5), now, zone))
+    }
 }

@@ -66,5 +66,18 @@ object Fmt {
         }
     }
 
+    fun time(epochSec: Long): String = java.text.SimpleDateFormat("HH:mm", pl).format(java.util.Date(epochSec * 1000))
+
+    /** Section header for a day in the history list: "Dzisiaj", "Wczoraj", "28 października" (+ year if not current). */
+    fun dayHeader(epochSec: Long, nowMillis: Long = System.currentTimeMillis(), zone: java.time.ZoneId = java.time.ZoneId.systemDefault()): String {
+        val day = java.time.Instant.ofEpochSecond(epochSec).atZone(zone).toLocalDate()
+        val today = java.time.Instant.ofEpochMilli(nowMillis).atZone(zone).toLocalDate()
+        return when (day) {
+            today -> "Dzisiaj"
+            today.minusDays(1) -> "Wczoraj"
+            else -> day.format(java.time.format.DateTimeFormatter.ofPattern(if (day.year == today.year) "d MMMM" else "d MMMM yyyy", pl))
+        }
+    }
+
     fun dateTime(epochSec: Long): String = java.text.SimpleDateFormat("d MMM yyyy, HH:mm", pl).format(java.util.Date(epochSec * 1000))
 }

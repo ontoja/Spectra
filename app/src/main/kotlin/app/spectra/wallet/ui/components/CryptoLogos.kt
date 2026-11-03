@@ -177,7 +177,7 @@ fun ChainLogo(chain: Chain, size: Dp, modifier: Modifier = Modifier) {
  * always sees which chain a token lives on.
  */
 @Composable
-fun AssetAvatar(symbol: String, chain: Chain?, isNative: Boolean, size: Dp = 42.dp, modifier: Modifier = Modifier, address: String? = null, testnet: Boolean = false) {
+fun AssetAvatar(symbol: String, chain: Chain?, isNative: Boolean, size: Dp = 42.dp, modifier: Modifier = Modifier, address: String? = null, testnet: Boolean = false, showNetworkBadge: Boolean = true) {
     if (isNative && chain != null) { ChainLogo(chain, size, modifier); return }
     val letter = symbol.firstOrNull { it.isLetterOrDigit() }?.uppercase() ?: "?"
     val known = chain?.let { knownToken(it, testnet, address) }
@@ -188,7 +188,7 @@ fun AssetAvatar(symbol: String, chain: Chain?, isNative: Boolean, size: Dp = 42.
         else Box(Modifier.size(size).clip(CircleShape).background(Brush.linearGradient(AssetGradients.token)), contentAlignment = Alignment.Center) {
             Text(letter, style = Spectra.type.bodyStrong.copy(fontSize = Spectra.type.bodyStrong.fontSize * (size.value / 42f)), color = Color.White)
         }
-        if (chain != null) {
+        if (chain != null && showNetworkBadge) {
             val badge = size * 0.42f
             ChainLogo(chain, badge, Modifier.align(Alignment.BottomEnd).offset(x = badge * 0.18f, y = badge * 0.18f)
                 .border(1.5.dp, Spectra.colors.background, CircleShape))

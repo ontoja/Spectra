@@ -51,6 +51,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.unit.dp
+import app.spectra.wallet.ui.activity.ActivityScreen
+import app.spectra.wallet.data.TransactionEntity
+import app.spectra.wallet.data.SwapEntity
 
 /**
  * Renders key screens on the JVM (no emulator) to PNGs under app/build/screenshots for visual comparison with the
@@ -182,6 +185,40 @@ class ScreenshotTest {
             Column(Modifier.statusBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp)) {
                 AssetPickerContent(vm, false, emptyList()) {}
             } } }
+    }
+
+    @Test fun historyEmpty() {
+        seed()
+        val main = MainViewModel(app.container, app, autoRefresh = false)
+        shot("15b_history_empty") { AuroraBackground(AuroraPreset.DETAIL) { ActivityScreen(main) {} } }
+    }
+
+    @Test fun history() {
+        val acc = seed()
+        val c = app.container
+        val sol = Network(Chain.SOLANA, NetworkEnv.MAINNET); val eth = Network(Chain.ETHEREUM, NetworkEnv.MAINNET); val ltc = Network(Chain.LITECOIN, NetworkEnv.MAINNET)
+        val solKey = TokenInfo.native(sol).id.key
+        val usdcKey = AssetId(sol, AssetKind.SPL_TOKEN, "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v").key
+        val now = System.currentTimeMillis()
+        val day = 86_400_000L
+        fun tx(id: String, n: Network, type: String, dir: String, state: String, key: String?, sym: String, units: String, dec: Int, cp: String?, at: Long, swapId: String? = null) =
+            TransactionEntity(id = id, accountId = acc, networkId = n.id, txId = "sig$id", type = type, direction = dir, state = state, assetKey = key, symbol = sym,
+                amountUnits = units, decimals = dec, feeUnits = null, counterparty = cp, fromAddress = null, rawSigned = null, rawEncoding = null,
+                lastValidBlockHeight = null, nonce = null, confirmations = null, error = null, source = "INDEXER", swapId = swapId,
+                createdAt = at, submittedAt = at, updatedAt = at, timestamp = at / 1000)
+        runBlocking {
+            c.db.transactions().upsertSwap(SwapEntity("sw1", acc, "JUPITER", null, sol.id, sol.id, solKey, usdcKey, "SOL", "USDC", "1000000000", 9,
+                "145900000", "145170000", 6, "a", "a", "COMPLETED", null, "sig2", null, null, now - 3_600_000, now - 3_600_000))
+            listOf(
+                tx("1", sol, "TRANSFER", "IN", "FINALIZED", solKey, "SOL", "250000000", 9, "7xKpQ2sVbE1nM3fQa", now - 600_000),
+                tx("2", sol, "SWAP", "OUT", "FINALIZED", solKey, "SOL", "1000000000", 9, null, now - 3_600_000, "sw1"),
+                tx("3", eth, "TRANSFER", "OUT", "PENDING", TokenInfo.native(eth).id.key, "ETH", "20000000000000000", 18, "0x3f8c00000000000000000000000000000000a91c", now - day),
+                tx("4", sol, "STAKE_DELEGATE", "OUT", "FINALIZED", solKey, "SOL", "2000000000", 9, null, now - day - 3_600_000),
+                tx("5", ltc, "TRANSFER", "IN", "CONFIRMED", TokenInfo.native(ltc).id.key, "LTC", "50000000", 8, "ltc1q9h0000000000000007m2d", now - 6 * day),
+            ).forEach { c.db.transactions().upsert(it) }
+        }
+        val main = MainViewModel(app.container, app, autoRefresh = false)
+        shot("15_history") { AuroraBackground(AuroraPreset.DETAIL) { ActivityScreen(main) {} } }
     }
 
     @Test fun swapStablecoinLogo() {

@@ -177,7 +177,7 @@ fun SegmentedTabs(items: List<String>, selected: Int, onSelect: (Int) -> Unit, m
                     (if (fill) Modifier.weight(1f) else Modifier).height(36.dp)
                         .onGloballyPositioned { bounds[i] = it.positionInParent().x to it.size.width.toFloat() }
                         .pressScale(interaction, 0.95f).clip(RoundedCornerShape(Radii.chip))
-                        .clickable(interaction, ripple(), role = Role.Tab) { onSelect(i) }.semantics { stateDescription = if (sel) "Wybrano" else "" }.padding(horizontal = 14.dp),
+                        .clickable(interaction, ripple(), role = Role.Tab) { onSelect(i) }.semantics { stateDescription = if (sel) "Wybrano" else "" }.padding(horizontal = if (fill) 4.dp else 14.dp),
                     contentAlignment = Alignment.Center,
                 ) { Text(label, style = Spectra.type.label, color = fg, maxLines = 1) }
             }
