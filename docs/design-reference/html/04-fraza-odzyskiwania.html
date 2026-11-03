@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pl"><head>
+<meta charset="utf-8">
+<title>Spectra — Fraza odzyskiwania</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+
+<style>
+body{margin:0;background:#F5F3FA;font-family:'Instrument Sans',system-ui,sans-serif;color:#17151F}
+a{color:inherit;text-decoration:none}a:hover{color:#4A33C9}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; isolation: isolate; background: #F5F3FA; color: #17151F; font-family: 'Instrument Sans', system-ui, sans-serif;">
+<div aria-hidden="true" style="position: absolute; top: -10%; left: -25%; right: -25%; bottom: -10%; z-index: 0; filter: blur(52px); background: radial-gradient(34% 22% at 18% 12%, rgba(171,159,242,0.70) 0%, rgba(171,159,242,0) 100%), radial-gradient(30% 22% at 86% 34%, rgba(255,188,160,0.55) 0%, rgba(255,188,160,0) 100%), radial-gradient(36% 24% at 20% 70%, rgba(150,196,255,0.50) 0%, rgba(150,196,255,0) 100%), radial-gradient(30% 22% at 84% 92%, rgba(160,230,200,0.50) 0%, rgba(160,230,200,0) 100%);"></div>
+
+<div style="position: relative; z-index: 1; height: 100%; box-sizing: border-box; padding: 56px 20px 30px; display: flex; flex-direction: column;">
+<div style="display: flex; align-items: center; gap: 14px;">
+<a href="Bio.dc.html" aria-label="Wróć" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</a>
+<div role="progressbar" aria-label="Postęp konfiguracji" aria-valuemin="1" aria-valuemax="3" aria-valuenow="3" style="flex-grow: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+<span style="height: 6px; border-radius: 3px; background: #6046E8; display: block;"></span>
+<span style="height: 6px; border-radius: 3px; background: #6046E8; display: block;"></span>
+<span style="height: 6px; border-radius: 3px; background: #6046E8; display: block;"></span>
+</div>
+<span style="font-size: 13px; font-weight: 600; color: #5E5A6E; width: 44px; text-align: right;">3 z 3</span>
+</div>
+
+<sc-if value="{{isShow}}" hint-placeholder-val="{{ true }}">
+<div style="flex-grow: 1; display: flex; flex-direction: column;">
+<h1 style="margin: 28px 0 0; font-size: 28px; font-weight: 600; letter-spacing: -0.03em;">Twoja fraza odzyskiwania</h1>
+<p style="margin: 8px 0 0; font-size: 15px; line-height: 1.45; color: #5E5A6E;">Te 12 słów to jedyny sposób, by odzyskać portfel. Zapisz je na papierze, w tej kolejności.</p>
+
+<div style="position: relative; margin-top: 20px; border-radius: 26px; padding: 12px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 12px 32px rgba(48,36,110,0.08), inset 0 1px 0 rgba(255,255,255,0.95);">
+<ol aria-hidden="{{wordsHidden}}" style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; {{blurStyle}}">
+<sc-for list="{{words}}" as="w" hint-placeholder-count="12">
+<li style="height: 44px; border-radius: 14px; padding: 0 10px; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.75); font-size: 15px; font-weight: 600;">
+<span style="font-size: 12px; font-weight: 600; color: #5E5A6E; width: 16px;">{{w.n}}</span>{{w.word}}
+</li>
+</sc-for>
+</ol>
+<sc-if value="{{hidden}}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+<button sc-camel-on-click="{{reveal}}" style="height: 48px; padding: 0 22px; border-radius: 24px; display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; background: #17151F; color: #FFFFFF; box-shadow: 0 10px 24px rgba(23,21,31,0.22);">
+<svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+Pokaż frazę
+</button>
+<span style="font-size: 13px; font-weight: 600; color: #17151F;">Upewnij się, że nikt nie patrzy na ekran</span>
+</div>
+</sc-if>
+</div>
+
+<div style="margin-top: 12px; display: flex; gap: 12px; padding: 14px 16px; border-radius: 22px; background: rgba(200,50,74,0.08); border: 1px solid rgba(200,50,74,0.18);">
+<span style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 12px; background: rgba(200,50,74,0.12); color: #B42A40; display: flex; align-items: center; justify-content: center;">
+<svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path><path d="M12 8v5M12 16.5v.01"></path></svg>
+</span>
+<span style="display: flex; flex-direction: column; gap: 3px;">
+<span style="font-size: 15px; font-weight: 600; color: #8E1F33;">Nigdy nikomu jej nie podawaj</span>
+<span style="font-size: 13px; line-height: 1.4; color: #5E5A6E;">Spectra nigdy nie zapyta o frazę. Kto ją zna, może zabrać wszystkie twoje środki. Nie rób zrzutu ekranu.</span>
+</span>
+</div>
+
+<label for="ack" style="margin-top: 14px; display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 14px; font-weight: 500; cursor: pointer;">
+<input id="ack" type="checkbox" checked="{{ack}}" sc-camel-on-change="{{toggleAck}}" style="width: 22px; height: 22px; margin: 0; flex-shrink: 0; accent-color: #6046E8;">
+Zapisałem frazę w bezpiecznym miejscu
+</label>
+
+<div style="flex-grow: 1;"></div>
+<button sc-camel-on-click="{{goVerify}}" disabled="{{showDisabled}}" style="height: 56px; border-radius: 28px; font-size: 16px; font-weight: 600; {{showCta}}">Dalej</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isVerify}}" hint-placeholder-val="{{ false }}">
+<div style="flex-grow: 1; display: flex; flex-direction: column;">
+<h1 style="margin: 28px 0 0; font-size: 28px; font-weight: 600; letter-spacing: -0.03em;">Sprawdźmy zapis</h1>
+<p style="margin: 8px 0 0; font-size: 15px; line-height: 1.45; color: #5E5A6E;">Wybierz właściwe słowo dla każdej pozycji.</p>
+
+<div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+<sc-for list="{{questions}}" as="q" hint-placeholder-count="3">
+<div role="group" aria-label="{{q.aria}}" style="border-radius: 24px; padding: 14px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 2px;">
+<span style="font-size: 14px; font-weight: 600;">Słowo nr {{q.n}}</span>
+<span style="font-size: 13px; font-weight: 600; color: {{q.statusColor}};">{{q.status}}</span>
+</div>
+<div style="margin-top: 10px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+<sc-for list="{{q.options}}" as="o" hint-placeholder-count="3">
+<button aria-pressed="{{o.pressed}}" sc-camel-on-click="{{o.pick}}" style="height: 44px; border-radius: 22px; font-size: 15px; font-weight: 600; {{o.style}}">{{o.word}}</button>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="flex-grow: 1;"></div>
+<sc-if value="{{allCorrect}}" hint-placeholder-val="{{ false }}">
+<a href="Prepare.dc.html" style="height: 56px; border-radius: 28px; background: #6046E8; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; box-shadow: 0 12px 26px rgba(96,70,232,0.32), inset 0 1px 0 rgba(255,255,255,0.3);">Utwórz portfel</a>
+</sc-if>
+<sc-if value="{{notAllCorrect}}" hint-placeholder-val="{{ true }}">
+<button disabled="{{ true }}" style="width: 100%; height: 56px; border-radius: 28px; font-size: 16px; font-weight: 600; background: rgba(23,21,31,0.06); color: #8A8699; cursor: default;">Utwórz portfel</button>
+</sc-if>
+</div>
+</sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { step: 'show', revealed: false, ack: false, picks: {} };
+  }
+  renderVals() {
+    const st = this.state;
+    const words = ['velvet', 'harbor', 'lunar', 'ember', 'prism', 'canyon', 'ripple', 'maple', 'saddle', 'orbit', 'quartz', 'tide'];
+    const qs = [
+      { n: 3, options: ['canyon', 'lunar', 'tide'] },
+      { n: 7, options: ['maple', 'ember', 'ripple'] },
+      { n: 11, options: ['quartz', 'orbit', 'velvet'] }
+    ];
+    const glass = 'background: rgba(255,255,255,0.8); color: #17151F;';
+    let correct = 0;
+    const questions = qs.map((q) => {
+      const answer = words[q.n - 1];
+      const picked = st.picks[q.n];
+      const ok = picked === answer;
+      if (ok) correct++;
+      return {
+        n: q.n,
+        aria: 'Słowo numer ' + q.n,
+        status: picked === undefined ? '' : (ok ? 'Zgadza się' : 'To nie to słowo'),
+        statusColor: ok ? '#12814F' : '#B42A40',
+        options: q.options.map((w) => {
+          let style = glass;
+          if (picked === w) style = w === answer ? 'background: #12814F; color: #FFFFFF;' : 'background: #C8324A; color: #FFFFFF;';
+          return {
+            word: w,
+            pressed: picked === w ? 'true' : 'false',
+            style: style,
+            pick: () => this.setState({ picks: Object.assign({}, this.state.picks, { [q.n]: w }) })
+          };
+        })
+      };
+    });
+    const canGo = st.revealed && st.ack;
+    return {
+      isShow: st.step === 'show',
+      isVerify: st.step === 'verify',
+      words: words.map((w, i) => ({ n: i + 1, word: w })),
+      hidden: !st.revealed,
+      wordsHidden: st.revealed ? 'false' : 'true',
+      blurStyle: st.revealed ? '' : 'filter: blur(7px); user-select: none;',
+      reveal: () => this.setState({ revealed: true }),
+      ack: st.ack,
+      toggleAck: () => this.setState({ ack: !this.state.ack }),
+      showDisabled: !canGo,
+      showCta: canGo ? 'background: #6046E8; color: #FFFFFF; box-shadow: 0 12px 26px rgba(96,70,232,0.32);' : 'background: rgba(23,21,31,0.06); color: #8A8699; cursor: default;',
+      goVerify: () => { if (this.state.revealed && this.state.ack) this.setState({ step: 'verify' }); },
+      questions: questions,
+      allCorrect: correct === qs.length,
+      notAllCorrect: correct !== qs.length
+    };
+  }
+}
+</script>
+
+
+</body></html>

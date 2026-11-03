@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pl"><head>
+<meta charset="utf-8">
+<title>Spectra — Biometria</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+
+<style>
+body{margin:0;background:#F5F3FA;font-family:'Instrument Sans',system-ui,sans-serif;color:#17151F}
+a{color:inherit;text-decoration:none}a:hover{color:#4A33C9}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; isolation: isolate; background: #F5F3FA; color: #17151F; font-family: 'Instrument Sans', system-ui, sans-serif;">
+<div aria-hidden="true" style="position: absolute; top: -10%; left: -25%; right: -25%; bottom: -10%; z-index: 0; filter: blur(52px); background: radial-gradient(34% 22% at 50% 22%, rgba(171,159,242,0.80) 0%, rgba(171,159,242,0) 100%), radial-gradient(30% 22% at 12% 40%, rgba(160,230,200,0.55) 0%, rgba(160,230,200,0) 100%), radial-gradient(34% 24% at 88% 56%, rgba(150,196,255,0.55) 0%, rgba(150,196,255,0) 100%), radial-gradient(30% 22% at 30% 92%, rgba(255,188,160,0.50) 0%, rgba(255,188,160,0) 100%);"></div>
+
+<div style="position: relative; z-index: 1; height: 100%; box-sizing: border-box; padding: 56px 24px 30px; display: flex; flex-direction: column; align-items: center;">
+<div style="width: 100%; display: flex; align-items: center; gap: 14px;">
+<a href="Setup.dc.html" aria-label="Wróć" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</a>
+<div role="progressbar" aria-label="Postęp konfiguracji" aria-valuemin="1" aria-valuemax="3" aria-valuenow="2" style="flex-grow: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+<span style="height: 6px; border-radius: 3px; background: #6046E8; display: block;"></span>
+<span style="height: 6px; border-radius: 3px; background: #6046E8; display: block;"></span>
+<span style="height: 6px; border-radius: 3px; background: rgba(23,21,31,0.10); display: block;"></span>
+</div>
+<span style="font-size: 13px; font-weight: 600; color: #5E5A6E; width: 44px; text-align: right;">2 z 3</span>
+</div>
+
+<div style="flex-grow: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+<span style="width: 128px; height: 128px; border-radius: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 20px 44px rgba(48,36,110,0.14), inset 0 1px 0 rgba(255,255,255,1);">
+<sc-if value="{{showIntro}}" hint-placeholder-val="{{ true }}">
+<svg width="64" height="64" sc-camel-view-box="0 0 24 24" fill="none" stroke="#6046E8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7.5A7 7 0 0 1 18.8 10M5 12.5a7 7 0 0 1 .5-3M19 13.5v.5a10 10 0 0 1-1.2 4.6M8 12a4 4 0 0 1 8 0v1.5a8 8 0 0 1-1.3 4.4M12 12v2a12 12 0 0 1-2.5 7M8.2 15.5a10 10 0 0 1-1.4 3.6M15.4 20.6l.3-.5"></path></svg>
+</sc-if>
+<sc-if value="{{unsupported}}" hint-placeholder-val="{{ false }}">
+<svg width="64" height="64" sc-camel-view-box="0 0 24 24" fill="none" stroke="#8A8699" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7.5A7 7 0 0 1 18.8 10M5 12.5a7 7 0 0 1 .5-3M19 13.5v.5a10 10 0 0 1-1.2 4.6M8 12a4 4 0 0 1 8 0v1.5a8 8 0 0 1-1.3 4.4M12 12v2a12 12 0 0 1-2.5 7M8.2 15.5a10 10 0 0 1-1.4 3.6M15.4 20.6l.3-.5"></path><path d="M3 3l18 18" stroke="#B42A40" stroke-width="1.8"></path></svg>
+</sc-if>
+<sc-if value="{{enabled}}" hint-placeholder-val="{{ false }}">
+<svg width="60" height="60" sc-camel-view-box="0 0 24 24" fill="none" stroke="#12814F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.8 2.8L16.5 9.5"></path></svg>
+</sc-if>
+</span>
+<h1 style="margin: 28px 0 0; font-size: 30px; font-weight: 600; letter-spacing: -0.03em; text-align: center;">{{title}}</h1>
+<p style="margin: 8px 0 0; max-width: 300px; text-align: center; font-size: 15px; line-height: 1.45; color: #5E5A6E;">{{body}}</p>
+
+<sc-if value="{{showIntro}}" hint-placeholder-val="{{ true }}">
+<div style="margin-top: 24px; width: 100%; border-radius: 24px; padding: 4px 16px; box-sizing: border-box; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<div style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid rgba(23,21,31,0.07); font-size: 14px; font-weight: 500;">
+<svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="#6046E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg>
+Odblokowanie jednym dotknięciem
+</div>
+<div style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid rgba(23,21,31,0.07); font-size: 14px; font-weight: 500;">
+<svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="#6046E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"></path></svg>
+Szybkie potwierdzanie przelewów
+</div>
+<div style="display: flex; align-items: center; gap: 12px; min-height: 52px; font-size: 14px; font-weight: 500;">
+<svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="#6046E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path></svg>
+Odcisk zostaje w telefonie — Spectra go nie widzi
+</div>
+</div>
+</sc-if>
+</div>
+
+<div style="width: 100%; display: flex; flex-direction: column; gap: 4px;">
+<sc-if value="{{showIntro}}" hint-placeholder-val="{{ true }}">
+<button sc-camel-on-click="{{openPrompt}}" style="width: 100%; height: 56px; border-radius: 28px; background: #6046E8; color: #FFFFFF; font-size: 16px; font-weight: 600; box-shadow: 0 12px 26px rgba(96,70,232,0.32), inset 0 1px 0 rgba(255,255,255,0.3);">Włącz biometrię</button>
+<a href="Phrase.dc.html" style="height: 48px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: #4A33C9;">Pomiń — włączę później</a>
+<p style="margin: 0; text-align: center; font-size: 12px; color: #5E5A6E;">Włączysz to w każdej chwili w Profil → Bezpieczeństwo</p>
+</sc-if>
+<sc-if value="{{unsupported}}" hint-placeholder-val="{{ false }}">
+<a href="Phrase.dc.html" style="height: 56px; border-radius: 28px; background: #6046E8; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; box-shadow: 0 12px 26px rgba(96,70,232,0.32), inset 0 1px 0 rgba(255,255,255,0.3);">Kontynuuj z PIN-em</a>
+<sc-if value="{{notEnrolled}}" hint-placeholder-val="{{ false }}">
+<button style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; color: #4A33C9;">Dodaj odcisk w ustawieniach telefonu
+<svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path></svg>
+</button>
+</sc-if>
+<p style="margin: 8px 0 0; text-align: center; font-size: 12px; color: #5E5A6E;">{{unsupportedNote}}</p>
+</sc-if>
+<sc-if value="{{enabled}}" hint-placeholder-val="{{ false }}">
+<a href="Phrase.dc.html" style="height: 56px; border-radius: 28px; background: #6046E8; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; box-shadow: 0 12px 26px rgba(96,70,232,0.32), inset 0 1px 0 rgba(255,255,255,0.3);">Dalej</a>
+</sc-if>
+</div>
+</div>
+
+<sc-if value="{{showPrompt}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 5; background: rgba(15,14,20,0.36);"></div>
+<div role="dialog" aria-modal="true" aria-labelledby="bp-title" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; padding: 28px 24px 36px; border-radius: 28px 28px 0 0; background: #F7F2FA; color: #1D1B20; font-family: Roboto, 'Google Sans', system-ui, sans-serif; box-shadow: 0 -8px 30px rgba(0,0,0,0.12); display: flex; flex-direction: column; align-items: center;">
+<span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
+<svg width="28" height="28" sc-camel-view-box="0 0 64 64"><circle cx="24" cy="25" r="15" fill="#8B6CFF" fill-opacity="0.78"></circle><circle cx="40" cy="25" r="15" fill="#FF9A76" fill-opacity="0.72"></circle><circle cx="32" cy="39" r="15" fill="#4FA3FF" fill-opacity="0.70"></circle></svg>
+</span>
+<h2 id="bp-title" style="margin: 16px 0 0; font-size: 22px; font-weight: 400; line-height: 1.25; text-align: center;">Włącz odblokowywanie biometrią</h2>
+<p style="margin: 6px 0 0; font-size: 14px; color: #49454F;">Spectra</p>
+<p style="margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: #49454F; text-align: center;">Potwierdź, że to Ty, aby szybciej odblokowywać portfel.</p>
+<button aria-label="{{sensorLabel}}" sc-camel-on-click="{{scan}}" style="margin-top: 26px; width: 72px; height: 72px; border-radius: 36px; display: flex; align-items: center; justify-content: center; {{sensorStyle}}">
+<sc-if value="{{scanning}}" hint-placeholder-val="{{ true }}">
+<svg width="40" height="40" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7.5A7 7 0 0 1 18.8 10M5 12.5a7 7 0 0 1 .5-3M19 13.5v.5a10 10 0 0 1-1.2 4.6M8 12a4 4 0 0 1 8 0v1.5a8 8 0 0 1-1.3 4.4M12 12v2a12 12 0 0 1-2.5 7M8.2 15.5a10 10 0 0 1-1.4 3.6M15.4 20.6l.3-.5"></path></svg>
+</sc-if>
+<sc-if value="{{verified}}" hint-placeholder-val="{{ false }}">
+<svg width="36" height="36" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+</sc-if>
+</button>
+<p aria-live="polite" style="margin: 14px 0 0; font-size: 14px; color: {{statusColor}};">{{status}}</p>
+<div style="margin-top: 22px; width: 100%; display: flex; justify-content: flex-start;">
+<button sc-camel-on-click="{{cancel}}" style="height: 40px; padding: 0 12px; border-radius: 20px; font-size: 14px; font-weight: 500; color: #0B57D0;">Anuluj</button>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;biometrics&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;available&quot;,&quot;not_enrolled&quot;,&quot;no_hardware&quot;],&quot;default&quot;:&quot;available&quot;},&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { step: 'intro' };
+    this.timer = null;
+  }
+  componentWillUnmount() {
+    if (this.timer) clearTimeout(this.timer);
+  }
+  scan() {
+    if (this.state.step !== 'prompt') return;
+    this.setState({ step: 'verified' });
+    this.timer = setTimeout(() => this.setState({ step: 'enabled' }), 900);
+  }
+  renderVals() {
+    // BiometricManager.canAuthenticate(BIOMETRIC_STRONG): SUCCESS → available,
+    // BIOMETRIC_ERROR_NONE_ENROLLED → not_enrolled, BIOMETRIC_ERROR_NO_HARDWARE / HW_UNAVAILABLE → no_hardware.
+    const support = this.props.biometrics ?? 'available';
+    const unsupported = support !== 'available';
+    const step = this.state.step;
+    const enabled = !unsupported && step === 'enabled';
+    const verified = step === 'verified';
+    let title = enabled ? 'Biometria włączona' : 'Odblokowuj szybciej';
+    let body = enabled ? 'Od teraz odblokujesz Spectrę odciskiem palca lub twarzą. PIN nadal działa jako zapas.' : 'Użyj odcisku palca lub rozpoznawania twarzy zamiast PIN-u. PIN zawsze zostaje jako zapasowa metoda.';
+    if (support === 'not_enrolled') {
+      title = 'Brak zapisanej biometrii';
+      body = 'Na tym telefonie nie dodano jeszcze odcisku palca ani twarzy. Portfel zabezpiecza PIN, który właśnie ustawiłeś.';
+    }
+    if (support === 'no_hardware') {
+      title = 'Biometria niedostępna';
+      body = 'Ten telefon nie obsługuje odblokowywania biometrią. Portfel zabezpiecza PIN, który właśnie ustawiłeś.';
+    }
+    return {
+      enabled: enabled,
+      notEnabled: !enabled,
+      unsupported: unsupported,
+      notEnrolled: support === 'not_enrolled',
+      showIntro: !unsupported && !enabled,
+      unsupportedNote: support === 'not_enrolled' ? 'Po dodaniu odcisku włączysz biometrię w Profil → Bezpieczeństwo' : 'Do portfela zawsze wejdziesz PIN-em',
+      title: title,
+      body: body,
+      openPrompt: () => this.setState({ step: 'prompt' }),
+      showPrompt: step === 'prompt' || verified,
+      scanning: !verified,
+      verified: verified,
+      scan: () => this.scan(),
+      sensorLabel: verified ? 'Rozpoznano' : 'Czujnik odcisku palca — dotknij, aby zasymulować',
+      sensorStyle: verified ? 'background: #C4EED0; color: #0D652D;' : 'background: #D3E3FD; color: #0B57D0;',
+      status: verified ? 'Rozpoznano' : 'Dotknij czujnika odcisku palca',
+      statusColor: verified ? '#0D652D' : '#49454F',
+      cancel: () => this.setState({ step: 'intro' })
+    };
+  }
+}
+</script>
+
+
+</body></html>

@@ -1,5 +1,7 @@
 # Spectra Wallet 0.1 (experimental)
 
+Full project and conversation context for new sessions: [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md). Design references: `docs/design-reference/`.
+
 Non-custodial, privacy-first multi-chain wallet for Android (Solana, Ethereum, Litecoin), built with Kotlin and Jetpack Compose in the "Aurora Glass" design.
 
 > **Experimental build.** Spectra 0.1 has **not** had an independent security audit. It is unsuitable for storing

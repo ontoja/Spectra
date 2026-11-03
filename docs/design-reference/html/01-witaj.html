@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pl"><head>
+<meta charset="utf-8">
+<title>Spectra — Witaj</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+
+<style>
+body{margin:0;background:#F5F3FA;font-family:'Instrument Sans',system-ui,sans-serif;color:#17151F}
+a{color:inherit;text-decoration:none}a:hover{color:#4A33C9}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer}
+@keyframes spDrift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,36px) scale(1.12)}100%{transform:translate(-24px,8px) scale(1.02)}}
+@keyframes spSway{0%{transform:translateX(-36px) skewX(-7deg)}100%{transform:translateX(36px) skewX(7deg)}}
+@keyframes spGlow{0%{opacity:.75}100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.sp-anim{animation:none !important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; isolation: isolate; background: #F5F3FA; color: #17151F; font-family: 'Instrument Sans', system-ui, sans-serif;">
+<div class="sp-anim" aria-hidden="true" style="position: absolute; top: -12%; left: -30%; right: -30%; bottom: -12%; z-index: 0; filter: blur(50px); animation: spDrift 16s ease-in-out infinite alternate; background: radial-gradient(34% 22% at 24% 20%, rgba(171,159,242,0.80) 0%, rgba(171,159,242,0) 100%), radial-gradient(30% 22% at 82% 30%, rgba(255,188,160,0.65) 0%, rgba(255,188,160,0) 100%), radial-gradient(38% 26% at 66% 76%, rgba(150,196,255,0.60) 0%, rgba(150,196,255,0) 100%), radial-gradient(30% 22% at 16% 88%, rgba(160,230,200,0.55) 0%, rgba(160,230,200,0) 100%);"></div>
+<div class="sp-anim" aria-hidden="true" style="position: absolute; top: -60px; left: -80px; right: -80px; height: 520px; z-index: 0; filter: blur(22px); animation: spSway 9s ease-in-out infinite alternate, spGlow 5s ease-in-out infinite alternate; background: radial-gradient(9% 64% at 14% 36%, rgba(61,219,176,0.55) 0%, rgba(61,219,176,0) 70%), radial-gradient(7% 70% at 30% 28%, rgba(139,108,255,0.50) 0%, rgba(139,108,255,0) 70%), radial-gradient(11% 66% at 50% 34%, rgba(96,70,232,0.42) 0%, rgba(96,70,232,0) 70%), radial-gradient(7% 62% at 68% 26%, rgba(79,163,255,0.48) 0%, rgba(79,163,255,0) 70%), radial-gradient(10% 70% at 86% 38%, rgba(255,154,118,0.45) 0%, rgba(255,154,118,0) 70%);"></div>
+<div aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; height: 560px; z-index: 0; background: linear-gradient(180deg, rgba(245,243,250,0) 40%, rgba(245,243,250,0.85) 100%);"></div>
+
+<div style="position: relative; z-index: 1; height: 100%; box-sizing: border-box; padding: 0 24px 30px; display: flex; flex-direction: column; align-items: center;">
+<div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding-top: 40px;">
+<div role="img" aria-label="Logo Spectra" style="width: 104px; height: 104px; border-radius: 34px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 20px 44px rgba(48,36,110,0.16), inset 0 1px 0 rgba(255,255,255,1);">
+<svg width="64" height="64" sc-camel-view-box="0 0 64 64" aria-hidden="true">
+<circle cx="24" cy="25" r="15" fill="#8B6CFF" fill-opacity="0.78"></circle>
+<circle cx="40" cy="25" r="15" fill="#FF9A76" fill-opacity="0.72"></circle>
+<circle cx="32" cy="39" r="15" fill="#4FA3FF" fill-opacity="0.70"></circle>
+<circle cx="32" cy="30" r="5" fill="#FFFFFF" fill-opacity="0.9"></circle>
+</svg>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+<h1 style="margin: 0; font-size: 44px; font-weight: 600; letter-spacing: -0.045em; line-height: 1;">Spectra</h1>
+<p style="margin: 0; max-width: 270px; text-align: center; font-size: 16px; line-height: 1.45; color: #5E5A6E;">Twój portfel krypto. Prosty, przejrzysty i tylko twój.</p>
+</div>
+</div>
+
+<div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+<a href="Setup.dc.html" style="height: 56px; border-radius: 28px; background: #6046E8; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; box-shadow: 0 12px 26px rgba(96,70,232,0.32), inset 0 1px 0 rgba(255,255,255,0.3);">Utwórz portfel</a>
+<button style="height: 56px; border-radius: 28px; font-size: 16px; font-weight: 600; background: rgba(255,255,255,0.6); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 8px 24px rgba(48,36,110,0.08), inset 0 1px 0 rgba(255,255,255,1);">Mam już portfel — importuj</button>
+<p style="margin: 8px 0 0; text-align: center; font-size: 12px; line-height: 1.5; color: #5E5A6E;">Kontynuując, akceptujesz <a href="#regulamin" style="color: #4A33C9; font-weight: 600;">Regulamin</a> i <a href="#prywatnosc" style="color: #4A33C9; font-weight: 600;">Politykę prywatności</a>.</p>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+
+
+</body></html>

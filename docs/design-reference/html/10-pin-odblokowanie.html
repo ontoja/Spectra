@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pl"><head>
+<meta charset="utf-8">
+<title>Portfel — PIN</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+
+<style>
+body{margin:0;background:#F5F3FA;font-family:'Instrument Sans',system-ui,sans-serif;color:#17151F}
+a{color:inherit;text-decoration:none}a:hover{color:#4A33C9}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; isolation: isolate; background: #F5F3FA; color: #17151F; font-family: 'Instrument Sans', system-ui, sans-serif;">
+<div aria-hidden="true" style="position: absolute; top: -10%; left: -25%; right: -25%; bottom: -10%; z-index: 0; filter: blur(52px); background: radial-gradient(36% 24% at 26% 18%, rgba(171,159,242,0.80) 0%, rgba(171,159,242,0) 100%), radial-gradient(30% 22% at 80% 26%, rgba(255,188,160,0.65) 0%, rgba(255,188,160,0) 100%), radial-gradient(38% 26% at 70% 70%, rgba(150,196,255,0.60) 0%, rgba(150,196,255,0) 100%), radial-gradient(32% 22% at 18% 86%, rgba(160,230,200,0.55) 0%, rgba(160,230,200,0) 100%);"></div>
+
+<div style="position: relative; z-index: 1; height: 100%; box-sizing: border-box; padding: 108px 24px 30px; display: flex; flex-direction: column; align-items: center;">
+<span style="width: 76px; height: 76px; border-radius: 38px; padding: 5px; box-sizing: border-box; display: block; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.85); box-shadow: 0 12px 32px rgba(48,36,110,0.12), inset 0 1px 0 rgba(255,255,255,1);">
+<span style="display: block; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(from 210deg, #AB9FF2, #FFBCA0, #96C4FF, #AB9FF2);"></span>
+</span>
+<h1 style="margin: 22px 0 0; font-size: 28px; font-weight: 600; letter-spacing: -0.03em;">Witaj ponownie</h1>
+<p style="margin: 6px 0 0; font-size: 15px; color: #5E5A6E;">Wpisz PIN, aby odblokować Konto 1</p>
+
+<div role="img" aria-label="{{dotsLabel}}" style="display: flex; gap: 14px; margin-top: 36px; padding: 14px 20px; border-radius: 26px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<sc-for list="{{dots}}" as="d" hint-placeholder-count="6">
+<span style="width: 14px; height: 14px; border-radius: 7px; box-sizing: border-box; display: block; {{d.style}}"></span>
+</sc-for>
+</div>
+<div aria-live="polite" style="height: 20px; margin-top: 14px; font-size: 14px; font-weight: 600; color: {{msgColor}};">{{message}}</div>
+
+<div style="flex-grow: 1;"></div>
+
+<div style="display: grid; grid-template-columns: repeat(3, 76px); column-gap: 30px; row-gap: 14px;">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+<button aria-label="{{k.aria}}" sc-camel-on-click="{{k.press}}" style="width: 76px; height: 76px; border-radius: 38px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 500; {{k.style}}">
+<sc-if value="{{k.isDigit}}" hint-placeholder-val="{{ true }}">{{k.label}}</sc-if>
+<sc-if value="{{k.isBio}}" hint-placeholder-val="{{ false }}">
+<svg width="28" height="28" sc-camel-view-box="0 0 24 24" fill="none" stroke="#6046E8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M9 9v1.5M15 9v1.5M12 9v4h-1M9 16c1.7 1.3 4.3 1.3 6 0"></path></svg>
+</sc-if>
+<sc-if value="{{k.isDel}}" hint-placeholder-val="{{ false }}">
+<svg width="28" height="28" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z"></path><path d="M13 10l4 4M17 10l-4 4"></path></svg>
+</sc-if>
+</button>
+</sc-for>
+</div>
+
+<div style="height: 56px; margin-top: 22px; width: 100%; display: flex; align-items: center; justify-content: center;">
+<sc-if value="{{unlocked}}" hint-placeholder-val="{{ false }}">
+<a href="Main.dc.html" style="width: 100%; height: 56px; border-radius: 28px; background: #6046E8; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; box-shadow: 0 10px 22px rgba(96,70,232,0.30), inset 0 1px 0 rgba(255,255,255,0.3);">Otwórz portfel</a>
+</sc-if>
+<sc-if value="{{locked}}" hint-placeholder-val="{{ true }}">
+<button style="height: 44px; padding: 0 16px; font-size: 14px; font-weight: 600; color: #4A33C9;">Nie pamiętasz PIN-u?</button>
+</sc-if>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pin: '', status: 'idle' };
+  }
+  press(k) {
+    const st = this.state;
+    if (st.status === 'ok') return;
+    let pin = st.status === 'error' ? '' : st.pin;
+    if (k === 'bio') { this.setState({ pin: '······', status: 'ok' }); return; }
+    if (k === 'del') { this.setState({ pin: pin.slice(0, -1), status: 'idle' }); return; }
+    if (pin.length >= 6) return;
+    pin = pin + k;
+    let status = 'idle';
+    if (pin.length === 6) status = pin === '000000' ? 'error' : 'ok';
+    this.setState({ pin: pin, status: status });
+  }
+  renderVals() {
+    const st = this.state;
+    const n = st.pin.length;
+    const dots = [0, 1, 2, 3, 4, 5].map((i) => {
+      let style = 'border: 2px solid rgba(23,21,31,0.22); background: transparent;';
+      if (st.status === 'error') style = 'border: 0; background: #C8324A;';
+      else if (st.status === 'ok') style = 'border: 0; background: #12814F;';
+      else if (i < n) style = 'border: 0; background: #6046E8;';
+      return { style: style };
+    });
+    const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'bio', '0', 'del'];
+    const glass = 'background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 22px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);';
+    const keys = labels.map((l) => {
+      const isDigit = l !== 'bio' && l !== 'del';
+      return {
+        label: l,
+        isDigit: isDigit,
+        isBio: l === 'bio',
+        isDel: l === 'del',
+        aria: l === 'bio' ? 'Odblokuj biometrią' : (l === 'del' ? 'Usuń cyfrę' : l),
+        style: isDigit ? glass : 'background: transparent;',
+        press: () => this.press(l)
+      };
+    });
+    let message = '';
+    let msgColor = '#5E5A6E';
+    if (st.status === 'error') { message = 'Nieprawidłowy PIN. Spróbuj ponownie.'; msgColor = '#B42A40'; }
+    if (st.status === 'ok') { message = 'Odblokowano'; msgColor = '#12814F'; }
+    return {
+      dots: dots,
+      dotsLabel: 'Wpisano ' + (st.status === 'ok' ? 6 : n) + ' z 6 cyfr',
+      keys: keys,
+      message: message,
+      msgColor: msgColor,
+      unlocked: st.status === 'ok',
+      locked: st.status !== 'ok'
+    };
+  }
+}
+</script>
+
+
+</body></html>

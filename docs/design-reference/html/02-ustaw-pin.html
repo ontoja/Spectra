@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pl"><head>
+<meta charset="utf-8">
+<title>Spectra — Zabezpieczenia</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+
+<style>
+body{margin:0;background:#F5F3FA;font-family:'Instrument Sans',system-ui,sans-serif;color:#17151F}
+a{color:inherit;text-decoration:none}a:hover{color:#4A33C9}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; isolation: isolate; background: #F5F3FA; color: #17151F; font-family: 'Instrument Sans', system-ui, sans-serif;">
+<div aria-hidden="true" style="position: absolute; top: -10%; left: -25%; right: -25%; bottom: -10%; z-index: 0; filter: blur(52px); background: radial-gradient(34% 22% at 78% 14%, rgba(171,159,242,0.75) 0%, rgba(171,159,242,0) 100%), radial-gradient(30% 22% at 14% 30%, rgba(150,196,255,0.55) 0%, rgba(150,196,255,0) 100%), radial-gradient(36% 24% at 80% 72%, rgba(160,230,200,0.50) 0%, rgba(160,230,200,0) 100%), radial-gradient(30% 22% at 16% 90%, rgba(255,188,160,0.50) 0%, rgba(255,188,160,0) 100%);"></div>
+
+<div style="position: relative; z-index: 1; height: 100%; box-sizing: border-box; padding: 56px 24px 30px; display: flex; flex-direction: column; align-items: center;">
+<div style="width: 100%; display: flex; align-items: center; gap: 14px;">
+<a href="Welcome.dc.html" aria-label="Wróć" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</a>
+<div role="progressbar" aria-label="Postęp konfiguracji" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" style="flex-grow: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+<span style="height: 6px; border-radius: 3px; background: #6046E8; display: block;"></span>
+<span style="height: 6px; border-radius: 3px; background: rgba(23,21,31,0.10); display: block;"></span>
+<span style="height: 6px; border-radius: 3px; background: rgba(23,21,31,0.10); display: block;"></span>
+</div>
+<span style="font-size: 13px; font-weight: 600; color: #5E5A6E; width: 44px; text-align: right;">1 z 3</span>
+</div>
+
+<sc-if value="{{isPinStep}}" hint-placeholder-val="{{ true }}">
+<div style="width: 100%; flex-grow: 1; display: flex; flex-direction: column; align-items: center;">
+<span style="margin-top: 40px; width: 56px; height: 56px; border-radius: 20px; background: rgba(96,70,232,0.12); color: #6046E8; display: flex; align-items: center; justify-content: center;">
+<svg width="26" height="26" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+</span>
+<h1 style="margin: 18px 0 0; font-size: 28px; font-weight: 600; letter-spacing: -0.03em;">{{title}}</h1>
+<p style="margin: 6px 0 0; max-width: 290px; text-align: center; font-size: 15px; line-height: 1.45; color: #5E5A6E;">{{subtitle}}</p>
+
+<div role="img" aria-label="{{dotsLabel}}" style="display: flex; gap: 14px; margin-top: 28px; padding: 14px 20px; border-radius: 26px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<sc-for list="{{dots}}" as="d" hint-placeholder-count="6">
+<span style="width: 14px; height: 14px; border-radius: 7px; box-sizing: border-box; display: block; {{d.style}}"></span>
+</sc-for>
+</div>
+<div aria-live="polite" style="height: 20px; margin-top: 14px; font-size: 14px; font-weight: 600; color: #B42A40;">{{error}}</div>
+
+<div style="flex-grow: 1;"></div>
+
+<div style="display: grid; grid-template-columns: repeat(3, 76px); column-gap: 30px; row-gap: 12px;">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+<button aria-label="{{k.aria}}" sc-camel-on-click="{{k.press}}" disabled="{{k.blank}}" style="width: 76px; height: 76px; border-radius: 38px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 500; {{k.style}}">
+<sc-if value="{{k.isDigit}}" hint-placeholder-val="{{ true }}">{{k.label}}</sc-if>
+<sc-if value="{{k.isDel}}" hint-placeholder-val="{{ false }}">
+<svg width="28" height="28" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z"></path><path d="M13 10l4 4M17 10l-4 4"></path></svg>
+</sc-if>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isBioStep}}" hint-placeholder-val="{{ false }}">
+<div style="width: 100%; flex-grow: 1; display: flex; flex-direction: column; align-items: center;">
+<div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+<span style="width: 120px; height: 120px; border-radius: 40px; display: flex; align-items: center; justify-content: center; color: #6046E8; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 20px 44px rgba(48,36,110,0.14), inset 0 1px 0 rgba(255,255,255,1);">
+<svg width="60" height="60" sc-camel-view-box="0 0 24 24" fill="none" stroke="#12814F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.8 2.8L16.5 9.5"></path></svg>
+</span>
+<h1 style="margin: 28px 0 0; font-size: 28px; font-weight: 600; letter-spacing: -0.03em; text-align: center;">PIN ustawiony</h1>
+<p style="margin: 8px 0 0; max-width: 290px; text-align: center; font-size: 15px; line-height: 1.45; color: #5E5A6E;">Będziesz go używać do odblokowania portfela i potwierdzania przelewów.</p>
+</div>
+<div style="width: 100%; display: flex; flex-direction: column; gap: 6px;">
+<a href="Bio.dc.html" style="height: 56px; border-radius: 28px; background: #6046E8; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; box-shadow: 0 12px 26px rgba(96,70,232,0.32), inset 0 1px 0 rgba(255,255,255,0.3);">Dalej</a>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { step: 'create', pin: '', first: '', error: '', bio: true };
+  }
+  press(k) {
+    const st = this.state;
+    if (k === 'del') { this.setState({ pin: st.pin.slice(0, -1), error: '' }); return; }
+    if (st.pin.length >= 6) return;
+    const pin = st.pin + k;
+    if (pin.length < 6) { this.setState({ pin: pin, error: '' }); return; }
+    if (st.step === 'create') {
+      this.setState({ step: 'confirm', first: pin, pin: '', error: '' });
+    } else if (pin === st.first) {
+      this.setState({ step: 'bio', pin: '' });
+    } else {
+      this.setState({ step: 'create', first: '', pin: '', error: 'PIN-y się różnią. Ustaw go jeszcze raz.' });
+    }
+  }
+  renderVals() {
+    const st = this.state;
+    const n = st.pin.length;
+    const dots = [0, 1, 2, 3, 4, 5].map((i) => ({
+      style: i < n ? 'border: 0; background: #6046E8;' : 'border: 2px solid rgba(23,21,31,0.22); background: transparent;'
+    }));
+    const glass = 'background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 22px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);';
+    const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'];
+    const keys = labels.map((l) => {
+      const isDigit = l !== '' && l !== 'del';
+      return {
+        label: l,
+        isDigit: isDigit,
+        isDel: l === 'del',
+        blank: l === '',
+        aria: l === 'del' ? 'Usuń cyfrę' : (l === '' ? '' : l),
+        style: isDigit ? glass : 'background: transparent; visibility: ' + (l === '' ? 'hidden' : 'visible') + ';',
+        press: () => this.press(l)
+      };
+    });
+    const confirm = st.step === 'confirm';
+    return {
+      isPinStep: st.step !== 'bio',
+      isBioStep: st.step === 'bio',
+      title: confirm ? 'Powtórz PIN' : 'Ustaw PIN',
+      subtitle: confirm ? 'Wpisz te same 6 cyfr, żeby potwierdzić.' : 'Będziesz go używać do odblokowania portfela i potwierdzania przelewów.',
+      dots: dots,
+      dotsLabel: 'Wpisano ' + n + ' z 6 cyfr',
+      error: st.error,
+      keys: keys,
+      bioChecked: st.bio ? 'true' : 'false',
+      toggleBio: () => this.setState({ bio: !this.state.bio }),
+      switchTrack: st.bio ? 'background: #6046E8; justify-content: flex-end;' : 'background: rgba(23,21,31,0.18); justify-content: flex-start;'
+    };
+  }
+}
+</script>
+
+
+</body></html>

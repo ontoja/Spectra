@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pl"><head>
+<meta charset="utf-8">
+<title>Spectra — Staking</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+
+<style>
+body{margin:0;background:#F5F3FA;font-family:'Instrument Sans',system-ui,sans-serif;color:#17151F}
+a{color:inherit;text-decoration:none}a:hover{color:#4A33C9}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; isolation: isolate; background: #F5F3FA; color: #17151F; font-family: 'Instrument Sans', system-ui, sans-serif; font-variant-numeric: tabular-nums;">
+<div aria-hidden="true" style="position: absolute; top: -10%; left: -25%; right: -25%; bottom: -10%; z-index: 0; filter: blur(50px); background: radial-gradient(34% 22% at 22% 14%, rgba(160,230,200,0.65) 0%, rgba(160,230,200,0) 100%), radial-gradient(32% 22% at 84% 22%, rgba(171,159,242,0.70) 0%, rgba(171,159,242,0) 100%), radial-gradient(36% 24% at 18% 66%, rgba(150,196,255,0.50) 0%, rgba(150,196,255,0) 100%), radial-gradient(30% 22% at 86% 90%, rgba(255,188,160,0.50) 0%, rgba(255,188,160,0) 100%);"></div>
+
+<div style="position: relative; z-index: 1; height: 100%; box-sizing: border-box; padding: 56px 20px 30px; display: flex; flex-direction: column; gap: 12px;">
+<div style="display: flex; align-items: center; justify-content: space-between;">
+<a href="Main.dc.html" aria-label="Wróć" style="width: 44px; height: 44px; border-radius: 22px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</a>
+<h1 style="margin: 0; font-size: 17px; font-weight: 600;">Staking</h1>
+<button aria-label="Jak działa staking" style="width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8v.01"></path></svg>
+</button>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin-top: 4px; padding: 4px; border-radius: 26px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<sc-for list="{{assets}}" as="t" hint-placeholder-count="2">
+<button aria-pressed="{{t.pressed}}" sc-camel-on-click="{{t.pick}}" style="height: 46px; border-radius: 22px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; {{t.style}}">
+<span style="width: 24px; height: 24px; border-radius: 12px; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: {{t.grad}};">{{t.letter}}</span>
+{{t.name}}
+</button>
+</sc-for>
+</div>
+
+<div style="border-radius: 28px; padding: 18px 18px 16px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 12px 32px rgba(48,36,110,0.08), inset 0 1px 0 rgba(255,255,255,0.95);">
+<div style="display: flex; align-items: center; justify-content: space-between;">
+<span style="font-size: 14px; font-weight: 600; color: #5E5A6E;">Szacowane nagrody</span>
+<span style="height: 26px; padding: 0 10px; border-radius: 13px; display: flex; align-items: center; gap: 5px; background: rgba(18,129,79,0.12); color: #0F6E43; font-size: 12px; font-weight: 700;">
+<span style="width: 6px; height: 6px; border-radius: 3px; background: #12814F; display: block;"></span>
+{{networkLabel}}
+</span>
+</div>
+<div style="display: flex; align-items: baseline; gap: 8px; margin-top: 8px; letter-spacing: -0.04em;">
+<span style="font-size: 44px; font-weight: 600; line-height: 1;">[APY]%</span>
+<span style="font-size: 16px; font-weight: 600; color: #5E5A6E; letter-spacing: 0;">rocznie</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 16px;">
+<div style="padding: 10px 12px; border-radius: 16px; background: rgba(255,255,255,0.7); display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 12px; color: #5E5A6E;">W stakingu</span>
+<span style="font-size: 15px; font-weight: 600;">0 {{sym}}</span>
+</div>
+<div style="padding: 10px 12px; border-radius: 16px; background: rgba(255,255,255,0.7); display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 12px; color: #5E5A6E;">Zarobione</span>
+<span style="font-size: 15px; font-weight: 600;">0 {{sym}}</span>
+</div>
+</div>
+</div>
+
+<div style="border-radius: 28px; padding: 16px 18px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 12px 32px rgba(48,36,110,0.08), inset 0 1px 0 rgba(255,255,255,0.95);">
+<div style="display: flex; align-items: center; justify-content: space-between;">
+<span style="font-size: 14px; font-weight: 600;">Kwota</span>
+<span style="font-size: 13px; color: #5E5A6E;">Dostępne {{balanceText}}</span>
+</div>
+<div aria-live="polite" style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 10px;">
+<span style="font-size: 34px; font-weight: 600; letter-spacing: -0.04em; line-height: 1; color: {{amountColor}};">{{amountText}} <span style="font-size: 20px; color: #5E5A6E;">{{sym}}</span></span>
+<span style="font-size: 14px; color: #5E5A6E;">≈ {{fiatText}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 14px;">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+<button aria-pressed="{{c.pressed}}" sc-camel-on-click="{{c.pick}}" style="height: 38px; border-radius: 19px; font-size: 14px; font-weight: 600; {{c.style}}">{{c.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="border-radius: 24px; padding: 2px 18px; background: rgba(255,255,255,0.55); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(48,36,110,0.07), inset 0 1px 0 rgba(255,255,255,0.95);">
+<button style="width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid rgba(23,21,31,0.07); font-size: 14px;">
+<span style="color: #5E5A6E;">{{providerLabel}}</span>
+<span style="display: flex; align-items: center; gap: 4px; font-weight: 600;">{{providerValue}}
+<svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="#5E5A6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+</span>
+</button>
+<div style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(23,21,31,0.07); font-size: 14px;">
+<span style="color: #5E5A6E;">Odblokowanie</span>
+<span style="font-weight: 600;">{{unlock}}</span>
+</div>
+<div style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
+<span style="color: #5E5A6E;">Opłata sieciowa</span>
+<span style="font-weight: 600;">{{fee}}</span>
+</div>
+</div>
+
+<div style="flex-grow: 1;"></div>
+<button disabled="{{disabled}}" style="height: 56px; border-radius: 28px; font-size: 16px; font-weight: 600; {{ctaStyle}}">{{ctaLabel}}</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { asset: 'SOL', pct: 0.5 };
+  }
+  renderVals() {
+    const data = {
+      SOL: { name: 'Solana', letter: 'S', grad: 'linear-gradient(135deg, #8B6CFF, #3DDBB0)', bal: 0.1499, price: 114.28, dec: 4, network: 'Sieć Solana', providerLabel: 'Walidator', providerValue: '[WALIDATOR]', unlock: 'ok. 2–3 dni', fee: '≈ 0,000005 SOL' },
+      ETH: { name: 'Ethereum', letter: 'E', grad: 'linear-gradient(135deg, #9AAEFF, #5A6CF0)', bal: 0.0002, price: 2650, dec: 6, network: 'Płynny staking', providerLabel: 'Dostawca', providerValue: '[DOSTAWCA]', unlock: '[CZAS WYPŁATY]', fee: '[OPŁATA]' }
+    };
+    const st = this.state;
+    const a = data[st.asset];
+    const amt = a.bal * st.pct;
+    const fmt = (v, d) => v.toLocaleString('pl-PL', { minimumFractionDigits: 0, maximumFractionDigits: d });
+    const amountText = fmt(amt, a.dec);
+    const pcts = [{ l: '25%', v: 0.25 }, { l: '50%', v: 0.5 }, { l: '75%', v: 0.75 }, { l: 'Max', v: 1 }];
+    const disabled = amt <= 0;
+    return {
+      assets: ['SOL', 'ETH'].map((id) => ({
+        name: data[id].name,
+        letter: data[id].letter,
+        grad: data[id].grad,
+        pressed: id === st.asset ? 'true' : 'false',
+        style: id === st.asset ? 'background: rgba(255,255,255,0.95); box-shadow: 0 2px 10px rgba(48,36,110,0.10); color: #17151F;' : 'background: transparent; color: #5E5A6E;',
+        pick: () => this.setState({ asset: id })
+      })),
+      sym: st.asset,
+      networkLabel: a.network,
+      balanceText: fmt(a.bal, a.dec) + ' ' + st.asset,
+      amountText: amountText,
+      amountColor: disabled ? '#8A8699' : '#17151F',
+      fiatText: (amt * a.price).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' zł',
+      chips: pcts.map((p) => ({
+        label: p.l,
+        pressed: p.v === st.pct ? 'true' : 'false',
+        style: p.v === st.pct ? 'background: #17151F; color: #FFFFFF;' : 'background: rgba(255,255,255,0.8); color: #17151F;',
+        pick: () => this.setState({ pct: p.v })
+      })),
+      providerLabel: a.providerLabel,
+      providerValue: a.providerValue,
+      unlock: a.unlock,
+      fee: a.fee,
+      disabled: disabled,
+      ctaLabel: 'Stakuj ' + amountText + ' ' + st.asset,
+      ctaStyle: disabled ? 'background: rgba(23,21,31,0.06); color: #8A8699; cursor: default;' : 'background: #6046E8; color: #FFFFFF; box-shadow: 0 12px 26px rgba(96,70,232,0.32), inset 0 1px 0 rgba(255,255,255,0.3);'
+    };
+  }
+}
+</script>
+
+
+</body></html>
